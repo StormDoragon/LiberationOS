@@ -9,7 +9,13 @@ export const metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <nav className="topnav">
+          <a href="/" className="logo">LiberationOS</a>
+          <a href="/projects">Projects</a>
+        </nav>
+        {children}
+      </body>
     </html>
   );
 }

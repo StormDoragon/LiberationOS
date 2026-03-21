@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { getProjectById } from "@liberation-os/workflow-engine";
 import { RunButton } from "./run-button";
+import { ContentActions, BulkApproveButton } from "./content-actions";
 
 export const dynamic = "force-dynamic";
 
@@ -30,7 +31,7 @@ export default async function ProjectDetailPage({ params }: ProjectPageProps) {
         <div className="card stack">
           <div className="row">
             <h2 style={{ margin: 0 }}>Project</h2>
-            <span className="badge">{project.status}</span>
+            <span className="badge" data-status={project.status}>{project.status}</span>
           </div>
           <p className="small">Workspace: {project.workspace.name}</p>
           <p className="small">Goal type: {project.goalType}</p>
@@ -62,22 +63,25 @@ export default async function ProjectDetailPage({ params }: ProjectPageProps) {
                 <strong>{step.key}</strong>
                 <div className="small">{step.agentName}</div>
               </div>
-              <span className="badge">{step.status}</span>
+              <span className="badge" data-status={step.status}>{step.status}</span>
             </div>
           ))
         )}
       </div>
 
       <div className="card stack">
-        <h2 style={{ margin: 0 }}>Generated drafts</h2>
+        <div className="row">
+          <h2 style={{ margin: 0 }}>Generated drafts ({project.content.length})</h2>
+          {project.content.length > 0 && <BulkApproveButton projectId={project.id} />}
+        </div>
         {project.content.length === 0 ? (
           <p className="small">No drafts yet. After the workflow runs, generated content will appear here.</p>
         ) : (
-          project.content.slice(0, 8).map((item) => (
+          project.content.map((item) => (
             <div key={item.id} className="card stack">
               <div className="row">
                 <strong>{item.title ?? item.type}</strong>
-                <span className="badge">{item.status}</span>
+                <ContentActions contentId={item.id} status={item.status} />
               </div>
               <p className="small">Platform: {item.platform ?? "n/a"}</p>
               <pre className="code">{item.body}</pre>

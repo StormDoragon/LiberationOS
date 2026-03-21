@@ -22,7 +22,7 @@ export default async function ProjectsPage() {
             <a key={project.id} className="card stack" href={`/projects/${project.id}`}>
               <div className="row">
                 <strong>{project.title}</strong>
-                <span className="badge">{project.status}</span>
+                <span className="badge" data-status={project.status}>{project.status}</span>
               </div>
               <p className="small">{project.goal}</p>
               <div className="row small">

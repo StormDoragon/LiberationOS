@@ -4,13 +4,21 @@
   "packageManager": "pnpm@10.0.0",
   "scripts": {
     "dev": "turbo run dev --parallel",
+    "dev:web": "pnpm --filter @liberation-os/web dev",
+    "dev:worker": "pnpm --filter @liberation-os/worker dev",
     "build": "turbo run build",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
     "worker": "pnpm --filter @liberation-os/worker dev",
     "db:generate": "pnpm --filter @liberation-os/db prisma:generate",
-    "db:migrate": "pnpm --filter @liberation-os/db prisma:migrate"
+    "db:migrate": "pnpm --filter @liberation-os/db prisma:migrate",
+    "db:seed": "pnpm --filter @liberation-os/db seed",
+    "db:push": "pnpm --filter @liberation-os/db prisma:push",
+    "db:studio": "pnpm --filter @liberation-os/db prisma:studio",
+    "setup": "pnpm install && pnpm db:generate && pnpm db:push && pnpm db:seed",
+    "infra:up": "docker compose up -d",
+    "infra:down": "docker compose down"
   },
   "devDependencies": {
     "turbo": "^2.5.0",
