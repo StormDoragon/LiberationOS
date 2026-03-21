@@ -17,6 +17,7 @@
     "@liberation-os/ui": "workspace:*",
     "@liberation-os/types": "workspace:*",
     "@liberation-os/agent-packs": "workspace:*",
+    "@liberation-os/workflow-engine": "workspace:*",
     "@liberation-os/utils": "workspace:*"
   },
   "devDependencies": {

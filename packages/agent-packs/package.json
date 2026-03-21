@@ -11,7 +11,7 @@
     "test": "echo no tests for agent-packs"
   },
   "dependencies": {
-    "@liberation-os/types": "workspace:*",
-    "@liberation-os/workflow-engine": "workspace:*"
+    "@liberation-os/ai-core": "workspace:*",
+    "@liberation-os/types": "workspace:*"
   }
 }

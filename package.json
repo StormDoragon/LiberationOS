@@ -13,6 +13,7 @@
     "db:migrate": "pnpm --filter @liberation-os/db prisma:migrate"
   },
   "devDependencies": {
+    "@types/node": "^22.13.10",
     "turbo": "^2.5.0",
     "typescript": "^5.8.2",
     "eslint": "^9.22.0",

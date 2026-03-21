@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+export * from "./client";
+
 export type ModelProvider = "openai" | "anthropic" | "google";
 
 export interface CompletionRequest {

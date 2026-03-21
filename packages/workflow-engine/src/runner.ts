@@ -1,7 +1,7 @@
 import type { AgentContext, WorkflowPlan } from "@liberation-os/types";
 import { AgentRegistry } from "./registry";
 
-export async function runWorkflow(plan: WorkflowPlan, registry: AgentRegistry, context: AgentContext) {
+export async function runWorkflowPlan(plan: WorkflowPlan, registry: AgentRegistry, context: AgentContext) {
   const outputs: Record<string, unknown> = {};
 
   for (const step of plan.steps) {
