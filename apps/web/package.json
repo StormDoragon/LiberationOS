@@ -1,0 +1,28 @@
+{
+  "name": "@liberation-os/web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "test": "echo no tests for web"
+  },
+  "dependencies": {
+    "next": "15.2.2",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "@liberation-os/ui": "workspace:*",
+    "@liberation-os/types": "workspace:*",
+    "@liberation-os/agent-packs": "workspace:*",
+    "@liberation-os/utils": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "typescript": "^5.8.2"
+  }
+}

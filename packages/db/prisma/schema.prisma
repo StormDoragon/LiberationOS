@@ -1,0 +1,116 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum WorkflowStatus {
+  pending
+  running
+  waiting_review
+  failed
+  completed
+}
+
+model User {
+  id         String      @id @default(cuid())
+  email      String      @unique
+  name       String?
+  workspaces Workspace[]
+  createdAt  DateTime    @default(now())
+}
+
+model Workspace {
+  id         String      @id @default(cuid())
+  userId     String
+  name       String
+  niche      String?
+  brandVoice String?
+  settings   Json?
+  user       User        @relation(fields: [userId], references: [id])
+  projects   Project[]
+  createdAt  DateTime    @default(now())
+}
+
+model Project {
+  id           String         @id @default(cuid())
+  workspaceId  String
+  title        String
+  goalType     String
+  input        Json
+  status       WorkflowStatus @default(pending)
+  workspace    Workspace      @relation(fields: [workspaceId], references: [id])
+  runs         WorkflowRun[]
+  content      ContentItem[]
+  createdAt    DateTime       @default(now())
+}
+
+model WorkflowRun {
+  id           String         @id @default(cuid())
+  projectId    String
+  workflowName String
+  status       WorkflowStatus @default(pending)
+  project      Project        @relation(fields: [projectId], references: [id])
+  steps        WorkflowStep[]
+  startedAt    DateTime?
+  completedAt  DateTime?
+  errorLog     String?
+}
+
+model WorkflowStep {
+  id            String         @id @default(cuid())
+  workflowRunId String
+  key           String
+  agentName     String
+  input         Json
+  output        Json?
+  status        WorkflowStatus @default(pending)
+  retryCount    Int            @default(0)
+  workflowRun   WorkflowRun    @relation(fields: [workflowRunId], references: [id])
+}
+
+model ContentItem {
+  id          String       @id @default(cuid())
+  projectId   String
+  type        String
+  platform    String?
+  title       String?
+  body        String
+  metadata    Json?
+  status      String       @default("draft")
+  project     Project      @relation(fields: [projectId], references: [id])
+  publishJobs PublishJob[]
+}
+
+model PublishJob {
+  id            String      @id @default(cuid())
+  contentItemId String
+  integration   String
+  scheduledFor  DateTime?
+  status        String      @default("pending")
+  externalId    String?
+  contentItem   ContentItem @relation(fields: [contentItemId], references: [id])
+}
+
+model IntegrationConnection {
+  id          String   @id @default(cuid())
+  workspaceId String
+  provider    String
+  credentials Json
+  metadata    Json?
+  createdAt   DateTime @default(now())
+}
+
+model AnalyticsRecord {
+  id            String   @id @default(cuid())
+  contentItemId String
+  source        String
+  impressions   Int      @default(0)
+  clicks        Int      @default(0)
+  conversions   Int      @default(0)
+  revenue       Float    @default(0)
+  capturedAt    DateTime @default(now())
+}

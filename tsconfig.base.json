@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "baseUrl": ".",
+    "paths": {
+      "@liberation-os/types": ["packages/types/src"],
+      "@liberation-os/prompts": ["packages/prompts/src"],
+      "@liberation-os/ai-core": ["packages/ai-core/src"],
+      "@liberation-os/workflow-engine": ["packages/workflow-engine/src"],
+      "@liberation-os/agent-packs": ["packages/agent-packs/src"],
+      "@liberation-os/integrations": ["packages/integrations/src"],
+      "@liberation-os/utils": ["packages/utils/src"],
+      "@liberation-os/analytics": ["packages/analytics/src"],
+      "@liberation-os/db": ["packages/db/src"],
+      "@liberation-os/ui": ["packages/ui/src"]
+    }
+  }
+}
