@@ -13,6 +13,7 @@
   "dependencies": {
     "@liberation-os/types": "workspace:*",
     "@liberation-os/workflow-engine": "workspace:*",
-    "@liberation-os/ai-core": "workspace:*"
+    "@liberation-os/ai-core": "workspace:*",
+    "@liberation-os/integrations": "workspace:*"
   }
 }

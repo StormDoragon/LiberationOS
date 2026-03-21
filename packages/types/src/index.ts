@@ -54,6 +54,49 @@ export interface ContentItemDraft {
   status?: ContentStatus;
 }
 
+// ---------------------------------------------------------------------------
+// Execution Trace
+// ---------------------------------------------------------------------------
+
+export type TraceEventType =
+  | "step_start"
+  | "step_end"
+  | "llm_call"
+  | "tool_call"
+  | "error";
+
+export interface TraceEvent {
+  id: string;
+  timestamp: string;        // ISO
+  type: TraceEventType;
+  stepKey: string;
+  agentName: string;
+  // LLM call fields
+  prompt?: string;
+  modelResponse?: string;
+  model?: string;
+  tokensIn?: number;
+  tokensOut?: number;
+  costUsd?: number;
+  // Tool call fields
+  toolName?: string;
+  toolArgs?: unknown;
+  toolResult?: unknown;
+  // Timing / reasoning
+  durationMs?: number;
+  reasoning?: string;       // LLM explanation for its decision
+  error?: string;
+}
+
+export interface TraceRecorder {
+  addEvent(event: Omit<TraceEvent, "id" | "timestamp">): TraceEvent;
+  getEvents(): TraceEvent[];
+}
+
+// ---------------------------------------------------------------------------
+// Agent context (updated to carry optional trace recorder)
+// ---------------------------------------------------------------------------
+
 export interface AgentContext {
   userId: string;
   workspaceId: string;
@@ -64,6 +107,7 @@ export interface AgentContext {
     info: (message: string, meta?: unknown) => void;
     error: (message: string, meta?: unknown) => void;
   };
+  trace?: TraceRecorder;
 }
 
 export interface GoalInterpretation extends StructuredGoal {

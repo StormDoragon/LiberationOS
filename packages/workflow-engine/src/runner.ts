@@ -10,13 +10,18 @@ import type {
 import { createTraceId } from "@liberation-os/utils";
 import { buildPlan } from "./planner";
 import { AgentRegistry } from "./registry";
+import { TraceRecorderImpl } from "./trace";
 
 const defaultLogger = {
   info: (message: string, meta?: unknown) => console.log(message, meta ?? ""),
   error: (message: string, meta?: unknown) => console.error(message, meta ?? ""),
 };
 
-function createContext(projectId: string, workspaceId: string): AgentContext {
+function createContext(
+  projectId: string,
+  workspaceId: string,
+  trace?: TraceRecorderImpl,
+): AgentContext {
   return {
     userId: "system",
     workspaceId,
@@ -24,6 +29,7 @@ function createContext(projectId: string, workspaceId: string): AgentContext {
     traceId: createTraceId("wf"),
     modelProvider: "openai",
     logger: defaultLogger,
+    trace,
   };
 }
 
@@ -80,7 +86,8 @@ export async function runProject(projectId: string, registry: AgentRegistry) {
   if (!project) throw new Error(`Project not found: ${projectId}`);
 
   const planning = await buildPlan(project.input as unknown as CreateProjectInput);
-  const context = createContext(project.id, project.workspaceId);
+  const traceRecorder = new TraceRecorderImpl();
+  const context = createContext(project.id, project.workspaceId, traceRecorder);
 
   const run = await db.workflowRun.create({
     data: {
@@ -115,7 +122,25 @@ export async function runProject(projectId: string, registry: AgentRegistry) {
     for (const dbStep of run.steps) {
       await updateStepStatus(dbStep.id, "running");
       const agent = registry.get(dbStep.agentName);
+
+      traceRecorder.addEvent({
+        type: "step_start",
+        stepKey: dbStep.key,
+        agentName: dbStep.agentName,
+      });
+
+      const stepStart = Date.now();
       const output = await agent.execute(dbStep.input as never, context, artifacts);
+      const durationMs = Date.now() - stepStart;
+
+      traceRecorder.addEvent({
+        type: "step_end",
+        stepKey: dbStep.key,
+        agentName: dbStep.agentName,
+        durationMs,
+        reasoning: `Agent "${dbStep.agentName}" completed step "${dbStep.key}" in ${durationMs}ms`,
+      });
+
       artifacts[dbStep.key] = output;
       await db.workflowStep.update({
         where: { id: dbStep.id },
@@ -146,7 +171,11 @@ export async function runProject(projectId: string, registry: AgentRegistry) {
       data: {
         status: "completed",
         completedAt: new Date(),
-        artifacts: artifacts as unknown as Prisma.InputJsonValue,
+        artifacts: {
+          ...artifacts,
+          trace: traceRecorder.getEvents(),
+          traceSummary: traceRecorder.summary(),
+        } as unknown as Prisma.InputJsonValue,
       },
     });
 
@@ -155,9 +184,24 @@ export async function runProject(projectId: string, registry: AgentRegistry) {
     return { runId: run.id, artifacts };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown workflow error";
+    traceRecorder.addEvent({
+      type: "error",
+      stepKey: "workflow",
+      agentName: "runner",
+      error: message,
+    });
     await db.workflowRun.update({
       where: { id: run.id },
-      data: { status: "failed", errorLog: message, completedAt: new Date() },
+      data: {
+        status: "failed",
+        errorLog: message,
+        completedAt: new Date(),
+        artifacts: {
+          ...artifacts,
+          trace: traceRecorder.getEvents(),
+          traceSummary: traceRecorder.summary(),
+        } as unknown as Prisma.InputJsonValue,
+      },
     });
     await db.project.update({ where: { id: project.id }, data: { status: "failed" } });
     throw error;

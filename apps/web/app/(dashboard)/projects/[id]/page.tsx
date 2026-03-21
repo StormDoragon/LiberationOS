@@ -1,7 +1,9 @@
 import { notFound } from "next/navigation";
 import { getProjectById } from "@liberation-os/workflow-engine";
+import type { TraceEvent } from "@liberation-os/types";
 import { RunButton } from "./run-button";
 import { ContentActions, BulkActions } from "./content-actions";
+import TraceViewer from "./trace-viewer";
 
 export const dynamic = "force-dynamic";
 
@@ -95,6 +97,32 @@ export default async function ProjectDetailPage({ params }: ProjectPageProps) {
           ))
         )}
       </div>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* Execution Trace                                                      */}
+      {/* ------------------------------------------------------------------ */}
+      {latestRun && (() => {
+        const rawArtifacts = latestRun.artifacts as {
+          trace?: TraceEvent[];
+          traceSummary?: {
+            totalEvents: number;
+            llmCalls: number;
+            toolCalls: number;
+            tokensIn: number;
+            tokensOut: number;
+            costUsd: number;
+          };
+        } | null;
+        const traceEvents = rawArtifacts?.trace ?? [];
+        const traceSummary = rawArtifacts?.traceSummary ?? null;
+
+        return (
+          <div className="card stack">
+            <h2 style={{ margin: 0 }}>Execution trace</h2>
+            <TraceViewer events={traceEvents} summary={traceSummary} />
+          </div>
+        );
+      })()}
     </main>
   );
 }

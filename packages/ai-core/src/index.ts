@@ -192,4 +192,5 @@ export function renderPromptPreview(request: GoalRequest): string {
   return `${goalInterpreterPrompt}\n\nUser goal: ${request.goal}`;
 }
 
-export { generateJSON } from "./client";
+export { generateJSON, generateJSONWithUsage, callWithTools } from "./client";
+export type { LLMUsage, LLMCallResult, ToolDefinition, ToolCallRecord, ToolCallResult } from "./client";

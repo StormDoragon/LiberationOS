@@ -1,4 +1,7 @@
 import { AgentRegistry, type Agent } from "@liberation-os/workflow-engine";
+import { createPublisherAgent } from "./tools/publisher-agent";
+import { createSEOAgent } from "./tools/seo-agent";
+import { createImageAgent } from "./tools/image-agent";
 import {
   generateCaptions,
   generateHooks,
@@ -201,6 +204,10 @@ export function createDefaultRegistry(): AgentRegistry {
     socialCalendar(),
     socialPosts(),
     socialSchedule(),
+    // Tool-calling agents
+    createPublisherAgent(),
+    createSEOAgent(),
+    createImageAgent(),
   ].forEach((agent) => registry.register(agent));
   return registry;
 }
@@ -208,3 +215,11 @@ export function createDefaultRegistry(): AgentRegistry {
 export { buildViralContentWorkflow } from "./viral-content/workflow";
 export { buildAffiliateSiteWorkflow } from "./affiliate-site/workflow";
 export { buildSocialSchedulerWorkflow } from "./social-scheduler/workflow";
+
+// Tool-calling agent creators + types
+export { createPublisherAgent } from "./tools/publisher-agent";
+export type { PublisherInput, PublisherOutput, IntegrationCredentialBlob } from "./tools/publisher-agent";
+export { createSEOAgent } from "./tools/seo-agent";
+export type { SEOInput, SEOOutput, SEOIssue } from "./tools/seo-agent";
+export { createImageAgent } from "./tools/image-agent";
+export type { ImageGenInput, ImageGenOutput } from "./tools/image-agent";

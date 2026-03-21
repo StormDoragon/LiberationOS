@@ -5,3 +5,4 @@ export * from "./runner";
 export * from "./projects";
 export * from "./queue";
 export * from "./run-workflow";
+export { TraceRecorderImpl } from "./trace";
