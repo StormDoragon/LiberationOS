@@ -4,6 +4,32 @@
 
 LiberationOS is an AI-powered system that transforms plain-English business goals into fully executed workflows. Describe what you want — viral content, an affiliate site, a social campaign — and the engine interprets your intent, builds a multi-step agent pipeline, generates all the deliverables, and hands you polished drafts ready for review and publishing.
 
+> **Reality Check**
+>
+> LiberationOS does **NOT** magically run your entire business. It excels at content-heavy workflows (viral posts, affiliate articles, social calendars). It generates drafts, schedules, outlines, and assets. **You** review, approve, and publish. Full business execution (traffic, sales, customer service, legal) still requires your brain + other tools.
+
+---
+
+## What It Actually Delivers
+
+**Example input:**
+> "Launch a viral TikTok campaign for my keto supplements"
+
+**Example output:**
+- 30 hooks (one-liner attention grabbers per content pillar)
+- 15 scripts (short-form video scripts with CTA)
+- Captions with hashtags for every post
+- A posting schedule spread across weeks
+- Composed drafts ready for Buffer / WordPress publishing
+- *(If you extend agents)* Canva-style thumbnail briefs
+
+**What it does NOT do:**
+- Post for you automatically (yet) — you click "Publish" or connect Buffer
+- Run ads, answer DMs, or manage customer service
+- File taxes or handle legal compliance
+- Rank on Google without your SEO tweaks
+- Browse the web, make purchases, or take autonomous actions
+
 ---
 
 ## Features
@@ -153,6 +179,8 @@ BUFFER_ACCESS_TOKEN=
 
 ## How It Works
 
+> **Every output passes through human review. This is non-negotiable by design.**
+
 ```
 User Goal (plain text)
     │
@@ -174,11 +202,42 @@ Agent Registry → executes each step sequentially
 Content Drafts → stored in PostgreSQL
     │
     ▼
-Human Review → approve / publish / revert
+┌──────────────────────────────────────────┐
+│  HUMAN REVIEW (required)                 │
+│  You approve, edit, or reject every item │
+│  Nothing publishes without your sign-off │
+└──────────────────────────────────────────┘
     │
     ▼
 Publishing → WordPress, Buffer (integrations)
 ```
+
+## Offline Mode Warning
+
+LiberationOS works **without an OpenAI API key** using built-in heuristic templates. Here's what offline mode actually produces:
+
+| Step | With OpenAI | Offline Fallback |
+|------|-------------|-----------------|
+| Goal Interpretation | GPT-parsed structured goal | Keyword-based heuristic extraction |
+| Content Pillars | AI-generated thematic pillars | Generic pillar templates based on niche string |
+| Hooks | GPT-crafted attention grabbers | Numbered placeholder hooks (`"#1: [niche] idea that stops the scroll"`) |
+| Scripts | Full short-form video scripts | Template scripts with pillar/hook insertion |
+| Captions | Platform-optimized captions with hashtags | Generic caption templates per platform |
+| Schedule | AI-optimized posting times | Evenly spaced time slots across days |
+| Articles | Full SEO-optimized articles | Outline stubs with section headers |
+
+**Bottom line:** Offline mode is functional for development and testing, but production-quality content requires an OpenAI key (or extending `ai-core` to support another LLM provider).
+
+## Current Limitations
+
+- **No autonomous posting** — integrations (WordPress, Buffer) are available but require manual connection and explicit publish actions
+- **No web browsing or scraping** — agents generate content from prompts, they don't research live data
+- **No ad management** — doesn't create, optimize, or manage paid advertising
+- **No SEO ranking** — generates SEO-friendly content but doesn't submit sitemaps, build backlinks, or monitor rankings
+- **No authentication system** — the current build uses a single demo workspace; multi-user auth is not yet implemented
+- **No autonomous purchasing** — cannot buy domains, hosting, or services on your behalf
+- **Analytics package is scaffolded** — tracks schema but doesn't yet collect or display real metrics
+- **Integration adapters are stubs** — WordPress and Buffer adapters exist but need real credentials and testing against live APIs
 
 ## Database Schema
 
