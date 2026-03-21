@@ -87,7 +87,7 @@ export default async function ProjectDetailPage({ params }: ProjectPageProps) {
             <div key={item.id} className="card stack">
               <div className="row">
                 <strong>{item.title ?? item.type}</strong>
-                <ContentActions contentId={item.id} status={item.status} />
+                <ContentActions contentId={item.id} status={item.status} workspaceId={project.workspaceId} />
               </div>
               <p className="small">Platform: {item.platform ?? "n/a"}</p>
               <pre className="code">{item.body}</pre>

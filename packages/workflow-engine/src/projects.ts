@@ -39,6 +39,10 @@ function toJsonValue(value: unknown): Prisma.InputJsonValue {
   return JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue;
 }
 
+export async function getDefaultWorkspace() {
+  return ensureDefaultWorkspace();
+}
+
 async function ensureDefaultWorkspace() {
   const user = await prisma.user.upsert({
     where: { email: defaultUserEmail },
