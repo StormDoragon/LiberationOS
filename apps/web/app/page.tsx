@@ -1,83 +1,55 @@
-"use client";
+import { NewGoalForm } from "../components/new-goal-form";
+import { getProjects } from "@liberation-os/workflow-engine";
 
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-
-interface CreateProjectResponse {
-  projectId: string;
-  workflowRunId: string;
-  jobId: string;
-}
-
-export default function HomePage() {
-  const router = useRouter();
-  const [goal, setGoal] = useState("");
-  const [result, setResult] = useState<CreateProjectResponse | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  async function handleRun() {
-    if (!goal.trim()) {
-      setError("Enter a goal before running the workflow.");
-      return;
-    }
-
-    setError(null);
-    setIsSubmitting(true);
-
-    try {
-      const response = await fetch("/api/projects", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ goal })
-      });
-
-      if (!response.ok) {
-        const payload = await response.json().catch(() => ({ error: "Request failed" }));
-        throw new Error(payload.error ?? "Failed to queue workflow");
-      }
-
-      const payload = (await response.json()) as CreateProjectResponse;
-      setResult(payload);
-      router.push(`/projects/${payload.projectId}`);
-    } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Failed to queue workflow");
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
+export default async function HomePage() {
+  const projects = await getProjects().catch(() => []);
 
   return (
-    <main className="container">
-      <div className="hero">
-        <div>
-          <p className="eyebrow">CORE FLOW</p>
-          <h1>LiberationOS</h1>
-          <p className="lead">User creates a project, queues a workflow, lets the worker execute agents, and reviews saved output in the UI.</p>
+    <main className="container stack">
+      <section className="hero">
+        <h1 style={{ fontSize: 42, marginBottom: 8 }}>LiberationOS</h1>
+        <p className="muted" style={{ maxWidth: 700 }}>
+          Enter a goal. Get execution. This Phase 3 scaffold adds Prisma-backed projects, workflow runs,
+          step tracking, persisted content drafts, and a real project detail view.
+        </p>
+      </section>
+
+      <div className="grid grid-2">
+        <NewGoalForm />
+        <div className="card stack">
+          <h2 style={{ margin: 0 }}>What this repo now does</h2>
+          <div className="stack small">
+            <span>• Creates projects in PostgreSQL through Prisma</span>
+            <span>• Builds a workflow plan from the user goal</span>
+            <span>• Runs a multi-step agent pipeline</span>
+            <span>• Saves workflow runs, steps, and generated drafts</span>
+          </div>
+          <a className="button" href="/projects">Open project dashboard</a>
         </div>
-        <a className="button secondary" href="/projects">Open dashboard</a>
       </div>
 
-      <section className="card panel">
-        <h2>Create Project</h2>
-        <p className="small">Try: Post 30 viral TikToks for anime motivation.</p>
-        <textarea
-          className="input area"
-          placeholder="Enter your goal..."
-          value={goal}
-          onChange={(event) => setGoal(event.target.value)}
-          rows={5}
-        />
-        <div className="actions">
-          <button className="button primary" onClick={handleRun} disabled={isSubmitting}>
-            {isSubmitting ? "Queueing..." : "Queue Workflow"}
-          </button>
+      <div className="card stack">
+        <div className="row">
+          <h2 style={{ margin: 0 }}>Recent projects</h2>
+          <a className="small" href="/projects">View all</a>
         </div>
-        {error ? <p className="error">{error}</p> : null}
-        <pre className="result">{JSON.stringify(result, null, 2)}</pre>
-      </section>
+        {projects.length === 0 ? (
+          <p className="small">No projects yet. Create the first one and wake the engine.</p>
+        ) : (
+          <div className="grid">
+            {projects.map((project) => (
+              <a key={project.id} className="card" href={`/projects/${project.id}`}>
+                <div className="row">
+                  <strong>{project.title}</strong>
+                  <span className="badge">{project.status}</span>
+                </div>
+                <p className="small">{project.goal}</p>
+                <p className="small">Runs: {project.runs.length} • Drafts: {project.content.length}</p>
+              </a>
+            ))}
+          </div>
+        )}
+      </div>
     </main>
   );
 }

@@ -11,10 +11,11 @@
     "test": "echo no tests for ai-core"
   },
   "dependencies": {
-    "openai": "^4.89.0",
-    "zod": "^3.24.2",
+    "@liberation-os/prompts": "workspace:*",
     "@liberation-os/types": "workspace:*",
-    "@liberation-os/prompts": "workspace:*"
+    "@liberation-os/utils": "workspace:*",
+    "openai": "^6.32.0",
+    "zod": "^3.24.2"
   },
   "devDependencies": {
     "@types/node": "^22.13.10"

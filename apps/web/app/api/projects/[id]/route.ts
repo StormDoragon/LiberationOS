@@ -1,19 +1,17 @@
 import { NextResponse } from "next/server";
-import { getProjectSnapshot } from "@liberation-os/workflow-engine";
+import { getProjectById } from "@liberation-os/workflow-engine";
 
-export const dynamic = "force-dynamic";
-
-interface RouteContext {
+interface RouteProps {
   params: Promise<{ id: string }>;
 }
 
-export async function GET(_request: Request, context: RouteContext) {
-  const { id } = await context.params;
-  const project = await getProjectSnapshot(id);
+export async function GET(_request: Request, { params }: RouteProps) {
+  const { id } = await params;
+  const project = await getProjectById(id);
 
   if (!project) {
     return NextResponse.json({ error: "Project not found" }, { status: 404 });
   }
 
-  return NextResponse.json(project);
+  return NextResponse.json({ project });
 }

@@ -15,6 +15,13 @@ enum WorkflowStatus {
   completed
 }
 
+enum ContentStatus {
+  draft
+  approved
+  scheduled
+  published
+}
+
 model User {
   id         String      @id @default(cuid())
   email      String      @unique
@@ -24,15 +31,16 @@ model User {
 }
 
 model Workspace {
-  id         String      @id @default(cuid())
-  userId     String
-  name       String
-  niche      String?
-  brandVoice String?
-  settings   Json?
-  user       User        @relation(fields: [userId], references: [id])
-  projects   Project[]
-  createdAt  DateTime    @default(now())
+  id                     String                  @id @default(cuid())
+  userId                 String
+  name                   String
+  niche                  String?
+  brandVoice             String?
+  settings               Json?
+  user                   User                    @relation(fields: [userId], references: [id])
+  projects               Project[]
+  integrationConnections IntegrationConnection[]
+  createdAt              DateTime                @default(now())
 }
 
 model Project {
@@ -40,12 +48,14 @@ model Project {
   workspaceId  String
   title        String
   goalType     String
+  goal         String
   input        Json
   status       WorkflowStatus @default(pending)
   workspace    Workspace      @relation(fields: [workspaceId], references: [id])
   runs         WorkflowRun[]
   content      ContentItem[]
   createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
 }
 
 model WorkflowRun {
@@ -58,6 +68,8 @@ model WorkflowRun {
   startedAt    DateTime?
   completedAt  DateTime?
   errorLog     String?
+  artifacts    Json?
+  createdAt    DateTime       @default(now())
 }
 
 model WorkflowStep {
@@ -70,19 +82,23 @@ model WorkflowStep {
   status        WorkflowStatus @default(pending)
   retryCount    Int            @default(0)
   workflowRun   WorkflowRun    @relation(fields: [workflowRunId], references: [id])
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
 }
 
 model ContentItem {
-  id          String       @id @default(cuid())
+  id          String        @id @default(cuid())
   projectId   String
   type        String
   platform    String?
   title       String?
   body        String
   metadata    Json?
-  status      String       @default("draft")
-  project     Project      @relation(fields: [projectId], references: [id])
+  status      ContentStatus @default(draft)
+  project     Project       @relation(fields: [projectId], references: [id])
   publishJobs PublishJob[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
 }
 
 model PublishJob {
@@ -93,15 +109,17 @@ model PublishJob {
   status        String      @default("pending")
   externalId    String?
   contentItem   ContentItem @relation(fields: [contentItemId], references: [id])
+  createdAt     DateTime    @default(now())
 }
 
 model IntegrationConnection {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   workspaceId String
   provider    String
   credentials Json
   metadata    Json?
-  createdAt   DateTime @default(now())
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  createdAt   DateTime  @default(now())
 }
 
 model AnalyticsRecord {

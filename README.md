@@ -1,34 +1,39 @@
-# LiberationOS
+# LiberationOS Phase 3 Scaffold
 
-Enter a goal. Get execution.
+This repo snapshot adds a functional Phase 3 foundation:
 
-This scaffold is a production-minded monorepo starter for a do-it-for-me AI business execution platform.
+- Prisma database layer
+- project creation API
+- workflow runs and step persistence
+- multi-agent registry
+- generated content draft persistence
+- project dashboard and detail pages
+- worker scaffold for BullMQ
 
-## Included
+## What works now
 
-- Next.js web app scaffold
-- Worker scaffold
-- Prisma schema
-- Typed workflow engine
-- AI provider abstraction
-- Starter agent packs
-- Integration adapters for WordPress and Buffer
-- GitHub Actions CI
-- Core docs
+1. Create a project from the home page or `POST /api/projects`
+2. Open a project detail page
+3. Run the workflow from the UI or `POST /api/projects/:id/run`
+4. Persist workflow steps and generated content drafts in PostgreSQL
 
-## Quick start
+## Setup
 
 ```bash
 pnpm install
 cp .env.example .env
 pnpm db:generate
+pnpm db:migrate
+pnpm --filter @liberation-os/db seed
 pnpm dev
 ```
 
-## Monorepo
+Start the optional worker separately:
 
-- `apps/web` UI and API routes
-- `apps/worker` async job processor
-- `packages/*` shared libraries
-- `prisma` root schema mirror
-- `docs` architecture and workflow notes
+```bash
+pnpm worker
+```
+
+## Notes
+
+The web app currently runs project workflows directly through the API route for an easier local demo path. The BullMQ worker scaffold is included so the next phase can shift execution fully into background jobs.

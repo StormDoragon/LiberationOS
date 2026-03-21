@@ -1,7 +1,7 @@
-import type { AgentContext } from "@liberation-os/types";
+import type { AgentContext, WorkflowArtifacts } from "@liberation-os/types";
 
 export interface Agent<Input = unknown, Output = unknown> {
   name: string;
   description: string;
-  execute(input: Input, context: AgentContext): Promise<Output>;
+  execute(input: Input, context: AgentContext, artifacts: WorkflowArtifacts): Promise<Output>;
 }

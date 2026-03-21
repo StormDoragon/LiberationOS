@@ -1,5 +1,9 @@
-export const goalInterpreterPrompt = `Convert a user goal into valid JSON.
-Fields:
+export const goalInterpreterPrompt = `
+You are an execution strategist for an AI business operating system.
+Interpret the user's goal and produce structured JSON.
+
+Return fields:
+- projectTitle
 - goalType
 - niche
 - platforms
@@ -8,4 +12,4 @@ Fields:
 - tone
 - constraints
 - successMetric
-Return JSON only.`;
+`;

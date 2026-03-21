@@ -3,6 +3,7 @@ import type { GoalRequest, WorkflowPlan } from "@liberation-os/types";
 export function buildAffiliateSiteWorkflow(input: GoalRequest): WorkflowPlan {
   return {
     workflowName: "affiliate-site-autopilot",
+    goalType: "affiliate_site_autopilot",
     steps: [
       { key: "site-map", agentName: "affiliate-planner-agent", input },
       { key: "briefs", agentName: "article-brief-agent", input },

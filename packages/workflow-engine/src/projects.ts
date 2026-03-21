@@ -123,6 +123,7 @@ export async function createProjectAndQueue(goal: string): Promise<CreateProject
       workspaceId: workspace.id,
       title: buildTitle(goal),
       goalType: "queued_goal",
+      goal,
       input: { goal },
       status: "pending",
       runs: {

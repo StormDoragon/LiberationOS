@@ -1,14 +1,26 @@
-import { createLogger } from "@liberation-os/utils";
-import { startWorkflowWorker } from "./worker";
+import { Worker } from "bullmq";
+import { redisConnection } from "./queue";
+import { createDefaultRegistry } from "@liberation-os/agent-packs";
+import { runProject } from "@liberation-os/workflow-engine";
 
-const logger = createLogger("worker");
+const registry = createDefaultRegistry();
 
-async function main() {
-  startWorkflowWorker();
-  logger.info("LiberationOS worker booted");
-}
+const worker = new Worker(
+  "workflow-runs",
+  async (job) => {
+    const projectId = String(job.data.projectId);
+    console.log(`Running workflow for project ${projectId}`);
+    return runProject(projectId, registry);
+  },
+  { connection: redisConnection },
+);
 
-main().catch((error) => {
-  logger.error("Worker crashed", error);
-  process.exit(1);
+worker.on("completed", (job) => {
+  console.log(`Completed job ${job.id}`);
 });
+
+worker.on("failed", (job, error) => {
+  console.error(`Failed job ${job?.id}`, error);
+});
+
+console.log("LiberationOS worker started");

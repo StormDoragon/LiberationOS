@@ -17,8 +17,9 @@
     "@liberation-os/ui": "workspace:*",
     "@liberation-os/types": "workspace:*",
     "@liberation-os/agent-packs": "workspace:*",
-    "@liberation-os/workflow-engine": "workspace:*",
-    "@liberation-os/utils": "workspace:*"
+    "@liberation-os/utils": "workspace:*",
+    "@liberation-os/db": "workspace:*",
+    "@liberation-os/workflow-engine": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^22.13.10",
