@@ -1,5 +1,6 @@
 import "./globals.css";
 import type { ReactNode } from "react";
+import Link from "next/link";
 
 export const metadata = {
   title: "LiberationOS",
@@ -11,8 +12,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="en">
       <body>
         <nav className="topnav">
-          <a href="/" className="logo">LiberationOS</a>
-          <a href="/projects">Projects</a>
+          <Link href="/" className="logo">LiberationOS</Link>
+          <Link href="/projects">Projects</Link>
         </nav>
         {children}
       </body>

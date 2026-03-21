@@ -1,4 +1,5 @@
 import { getProjects } from "@liberation-os/workflow-engine";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
@@ -12,14 +13,14 @@ export default async function ProjectsPage() {
           <h1 style={{ marginBottom: 4 }}>Projects</h1>
           <p className="small">Database-backed goals, workflow runs, and saved drafts.</p>
         </div>
-        <a className="button" href="/">New goal</a>
+        <Link className="button" href="/">New goal</Link>
       </div>
 
       <div className="grid">
         {projects.map((project) => {
           const latestRun = project.runs[0];
           return (
-            <a key={project.id} className="card stack" href={`/projects/${project.id}`}>
+            <Link key={project.id} className="card stack" href={`/projects/${project.id}`}>
               <div className="row">
                 <strong>{project.title}</strong>
                 <span className="badge" data-status={project.status}>{project.status}</span>
@@ -29,7 +30,7 @@ export default async function ProjectsPage() {
                 <span>Workflow: {latestRun?.workflowName ?? "Not run yet"}</span>
                 <span>Drafts: {project.content.length}</span>
               </div>
-            </a>
+            </Link>
           );
         })}
       </div>

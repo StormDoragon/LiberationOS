@@ -11,20 +11,22 @@
     "test": "echo no tests for web"
   },
   "dependencies": {
+    "@liberation-os/agent-packs": "workspace:*",
+    "@liberation-os/db": "workspace:*",
+    "@liberation-os/types": "workspace:*",
+    "@liberation-os/ui": "workspace:*",
+    "@liberation-os/utils": "workspace:*",
+    "@liberation-os/workflow-engine": "workspace:*",
     "next": "15.2.2",
     "react": "19.0.0",
-    "react-dom": "19.0.0",
-    "@liberation-os/ui": "workspace:*",
-    "@liberation-os/types": "workspace:*",
-    "@liberation-os/agent-packs": "workspace:*",
-    "@liberation-os/utils": "workspace:*",
-    "@liberation-os/db": "workspace:*",
-    "@liberation-os/workflow-engine": "workspace:*"
+    "react-dom": "19.0.0"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.5",
     "@types/node": "^22.13.10",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
+    "eslint-config-next": "^15.2.2",
     "typescript": "^5.8.2"
   }
 }

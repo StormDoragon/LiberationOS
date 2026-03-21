@@ -1,5 +1,6 @@
 import { NewGoalForm } from "../components/new-goal-form";
 import { getProjects } from "@liberation-os/workflow-engine";
+import Link from "next/link";
 
 export default async function HomePage() {
   const projects = await getProjects().catch(() => []);
@@ -24,28 +25,28 @@ export default async function HomePage() {
             <span>3. Agent pipeline generates content step-by-step</span>
             <span>4. Review, approve, and publish your drafts</span>
           </div>
-          <a className="button primary" href="/projects">Open project dashboard &rarr;</a>
+          <Link className="button primary" href="/projects">Open project dashboard &rarr;</Link>
         </div>
       </div>
 
       <div className="card stack">
         <div className="row">
           <h2 style={{ margin: 0 }}>Recent projects</h2>
-          <a className="small" href="/projects">View all</a>
+          <Link className="small" href="/projects">View all</Link>
         </div>
         {projects.length === 0 ? (
           <p className="small">No projects yet. Create the first one and wake the engine.</p>
         ) : (
           <div className="grid">
             {projects.map((project) => (
-              <a key={project.id} className="card" href={`/projects/${project.id}`}>
+              <Link key={project.id} className="card" href={`/projects/${project.id}`}>
                 <div className="row">
                   <strong>{project.title}</strong>
                   <span className="badge" data-status={project.status}>{project.status}</span>
                 </div>
                 <p className="small">{project.goal}</p>
                 <p className="small">Runs: {project.runs.length} • Drafts: {project.content.length}</p>
-              </a>
+              </Link>
             ))}
           </div>
         )}
