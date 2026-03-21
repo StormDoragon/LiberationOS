@@ -14,6 +14,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <nav className="topnav">
           <Link href="/" className="logo">LiberationOS</Link>
           <Link href="/projects">Projects</Link>
+          <Link href="/attention">Attention</Link>
         </nav>
         {children}
       </body>

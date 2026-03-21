@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { getProjectById } from "@liberation-os/workflow-engine";
 import { RunButton } from "./run-button";
-import { ContentActions, BulkApproveButton } from "./content-actions";
+import { ContentActions, BulkActions } from "./content-actions";
 
 export const dynamic = "force-dynamic";
 
@@ -72,8 +72,14 @@ export default async function ProjectDetailPage({ params }: ProjectPageProps) {
       <div className="card stack">
         <div className="row">
           <h2 style={{ margin: 0 }}>Generated drafts ({project.content.length})</h2>
-          {project.content.length > 0 && <BulkApproveButton projectId={project.id} />}
         </div>
+        {project.content.length > 0 && (
+          <BulkActions
+            projectId={project.id}
+            draftCount={project.content.filter((c) => c.status === "draft").length}
+            approvedCount={project.content.filter((c) => c.status === "approved").length}
+          />
+        )}
         {project.content.length === 0 ? (
           <p className="small">No drafts yet. After the workflow runs, generated content will appear here.</p>
         ) : (
