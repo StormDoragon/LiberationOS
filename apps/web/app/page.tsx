@@ -8,10 +8,10 @@ export default async function HomePage() {
   return (
     <main className="container stack">
       <section className="hero">
-        <h1 style={{ fontSize: 42, marginBottom: 8 }}>Enter a goal. Get execution.</h1>
-        <p className="muted" style={{ maxWidth: 700 }}>
-          Describe what you want to build—viral content, an affiliate site, a social campaign—and
-          LiberationOS plans, generates, and schedules everything automatically.
+        <h1 style={{ fontSize: 42, marginBottom: 8 }}>LiberationOS</h1>
+        <p className="muted" style={{ maxWidth: 700, fontSize: 20, marginBottom: 8 }}>
+          AI that turns business goals into review-ready content pipelines.<br />
+          No magic, just reliable agents + you.
         </p>
       </section>
 

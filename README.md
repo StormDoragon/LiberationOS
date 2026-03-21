@@ -1,6 +1,6 @@
 # LiberationOS
 
-**Enter a goal. Get execution.**
+**AI that turns business goals into review-ready content pipelines. No magic, just reliable agents + you.**
 
 LiberationOS is an AI-powered system that transforms plain-English business goals into fully executed workflows. Describe what you want — viral content, an affiliate site, a social campaign — and the engine interprets your intent, builds a multi-step agent pipeline, generates all the deliverables, and hands you polished drafts ready for review and publishing.
 

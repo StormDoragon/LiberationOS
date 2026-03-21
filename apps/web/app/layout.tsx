@@ -4,7 +4,7 @@ import Link from "next/link";
 
 export const metadata = {
   title: "LiberationOS",
-  description: "Enter a goal. Get execution."
+  description: "AI that turns business goals into review-ready content pipelines. No magic, just reliable agents + you."
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
