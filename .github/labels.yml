@@ -1,0 +1,42 @@
+# Small starter label set for issue triage.
+# Can be synced with tools like github-label-sync or created via gh CLI.
+
+- name: good first issue
+  color: "7057ff"
+  description: Small, low-risk task suitable for new contributors.
+
+- name: help wanted
+  color: "008672"
+  description: Maintainers welcome community help on this issue.
+
+- name: first-timer-only
+  color: "5319e7"
+  description: Reserved for contributors making their first open-source PR.
+
+- name: size:xs
+  color: "c2e0c6"
+  description: Very small task, typically less than 1 hour.
+
+- name: size:s
+  color: "bfd4f2"
+  description: Small task, typically 1 to 3 hours.
+
+- name: type:docs
+  color: "1d76db"
+  description: Documentation-only work.
+
+- name: type:tests
+  color: "fbca04"
+  description: Adds or improves tests.
+
+- name: type:bug
+  color: "d73a4a"
+  description: Fixes incorrect behavior.
+
+- name: area:web
+  color: "0e8a16"
+  description: Dashboard, API routes, or Next.js app work.
+
+- name: area:ai-core
+  color: "0052cc"
+  description: Prompting, model calls, and workflow generation logic.
