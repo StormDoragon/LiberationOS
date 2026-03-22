@@ -57,6 +57,46 @@ const PROVIDERS: ProviderDef[] = [
     ],
   },
   {
+    id: "facebook",
+    label: "Facebook",
+    description: "Publish via Buffer to connected Facebook Page profiles.",
+    icon: "f",
+    fields: [
+      { key: "accessToken", label: "Buffer Access Token", type: "password", placeholder: "Buffer OAuth token" },
+      { key: "profileIds", label: "Facebook Profile IDs (comma-separated)", type: "text", placeholder: "buffer_profile_id_1,buffer_profile_id_2" },
+    ],
+  },
+  {
+    id: "youtube",
+    label: "YouTube",
+    description: "Publish via Buffer to connected YouTube channel profiles.",
+    icon: "YT",
+    fields: [
+      { key: "accessToken", label: "Buffer Access Token", type: "password", placeholder: "Buffer OAuth token" },
+      { key: "profileIds", label: "YouTube Profile IDs (comma-separated)", type: "text", placeholder: "buffer_profile_id_1,buffer_profile_id_2" },
+    ],
+  },
+  {
+    id: "reddit",
+    label: "Reddit",
+    description: "Publish via Buffer to connected Reddit profiles.",
+    icon: "R",
+    fields: [
+      { key: "accessToken", label: "Buffer Access Token", type: "password", placeholder: "Buffer OAuth token" },
+      { key: "profileIds", label: "Reddit Profile IDs (comma-separated)", type: "text", placeholder: "buffer_profile_id_1,buffer_profile_id_2" },
+    ],
+  },
+  {
+    id: "snapchat",
+    label: "Snapchat",
+    description: "Publish via Buffer to connected Snapchat profiles.",
+    icon: "S",
+    fields: [
+      { key: "accessToken", label: "Buffer Access Token", type: "password", placeholder: "Buffer OAuth token" },
+      { key: "profileIds", label: "Snapchat Profile IDs (comma-separated)", type: "text", placeholder: "buffer_profile_id_1,buffer_profile_id_2" },
+    ],
+  },
+  {
     id: "mailchimp",
     label: "Mailchimp",
     description: "Create and send email campaigns to your audience.",
@@ -136,9 +176,10 @@ function ProviderCard({
     setSaving(true);
     setError(null);
     try {
-      // Convert comma-separated profileIds to array for Buffer
+      // Convert comma-separated profileIds to array for Buffer-backed providers
       const credentials: Record<string, unknown> = { ...fields };
-      if (provider.id === "buffer" && typeof credentials.profileIds === "string") {
+      const usesBufferProfiles = ["buffer", "facebook", "youtube", "reddit", "snapchat"].includes(provider.id);
+      if (usesBufferProfiles && typeof credentials.profileIds === "string") {
         credentials.profileIds = credentials.profileIds
           .split(",")
           .map((s: string) => s.trim())

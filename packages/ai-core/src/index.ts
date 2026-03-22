@@ -33,6 +33,11 @@ function inferPlatforms(goal: string): string[] {
     ["x", "x"],
     ["twitter", "x"],
     ["facebook", "facebook"],
+    ["youtube", "youtube"],
+    ["yt", "youtube"],
+    ["reddit", "reddit"],
+    ["snapchat", "snapchat"],
+    ["snap", "snapchat"],
     ["linkedin", "linkedin"],
     ["wordpress", "wordpress"],
   ].filter(([needle]) => lower.includes(needle)).map(([, value]) => value);

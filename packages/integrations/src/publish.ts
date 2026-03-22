@@ -41,7 +41,7 @@ type AnyCredentials = Record<string, any>;
  * Publish a ContentItem to a specific integration provider.
  *
  * @param content   - The ContentItem to publish (body/title/metadata)
- * @param provider  - Provider string (twitter | instagram | mailchimp | convertkit | shopify | wordpress | buffer)
+ * @param provider  - Provider string (twitter | instagram | facebook | youtube | reddit | snapchat | mailchimp | convertkit | shopify | wordpress | buffer)
  * @param credentials - Decrypted credentials object from IntegrationConnection
  * @param options   - Optional scheduledAt ISO string
  */
@@ -136,6 +136,20 @@ export async function publishContent(
         credentials as Parameters<typeof scheduleWithBuffer>[1],
       );
       return result;
+    }
+
+    // These channels are routed through Buffer profiles for publishing.
+    case "facebook":
+    case "youtube":
+    case "reddit":
+    case "snapchat": {
+      const profileIds: string[] =
+        (credentials as { profileIds?: string[] }).profileIds ?? [];
+      const result = await scheduleWithBuffer(
+        { text: content.body.slice(0, 500), profileIds, scheduledAt },
+        credentials as Parameters<typeof scheduleWithBuffer>[1],
+      );
+      return { ...result, provider };
     }
 
     default:
