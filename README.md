@@ -53,7 +53,7 @@ LiberationOS is an AI-powered system that transforms plain-English business goal
 | API | Next.js API routes (REST) |
 | Database | PostgreSQL 16, Prisma 6 |
 | Queue | Redis 7, BullMQ |
-| AI | OpenAI SDK (with offline fallbacks) |
+| AI | OpenAI SDK + OpenAI-compatible local endpoints (Ollama, LM Studio) with offline fallbacks |
 | Monorepo | pnpm workspaces, Turborepo |
 | Infrastructure | Docker Compose |
 
@@ -169,6 +169,15 @@ NODE_ENV=development
 
 # AI — optional, system uses offline fallbacks without a key
 OPENAI_API_KEY=
+OPENAI_MODEL=gpt-4.1-mini
+
+# Optional: OpenAI-compatible endpoint (Ollama, LM Studio, vLLM, etc.)
+# If OPENAI_BASE_URL (or LLM_BASE_URL) is set, local models are used.
+# LOCAL_LLM_API_KEY is optional for providers that require a token.
+OPENAI_BASE_URL=
+LLM_BASE_URL=
+LOCAL_LLM_MODEL=
+LOCAL_LLM_API_KEY=
 
 # Integrations — optional
 WORDPRESS_API_URL=
@@ -227,6 +236,45 @@ LiberationOS works **without an OpenAI API key** using built-in heuristic templa
 | Articles | Full SEO-optimized articles | Outline stubs with section headers |
 
 **Bottom line:** Offline mode is functional for development and testing, but production-quality content requires an OpenAI key (or extending `ai-core` to support another LLM provider).
+
+## Local LLM Setup (Ollama / LM Studio)
+
+LiberationOS supports any OpenAI-compatible chat endpoint.
+
+### Option A — Ollama
+
+1. Start Ollama and pull a model:
+
+```bash
+ollama pull llama3.1:8b
+ollama serve
+```
+
+2. Set env vars:
+
+```env
+OPENAI_BASE_URL=http://127.0.0.1:11434/v1
+LOCAL_LLM_MODEL=llama3.1:8b
+# Optional for local gateways that require auth
+LOCAL_LLM_API_KEY=
+```
+
+### Option B — LM Studio
+
+1. Start the local server in LM Studio (OpenAI-compatible API mode).
+
+2. Set env vars:
+
+```env
+OPENAI_BASE_URL=http://127.0.0.1:1234/v1
+LOCAL_LLM_MODEL=<your-loaded-model-id>
+LOCAL_LLM_API_KEY=lm-studio
+```
+
+Notes:
+
+- `OPENAI_API_KEY` is not required when using `OPENAI_BASE_URL` or `LLM_BASE_URL`.
+- If no key/base URL is configured, the project automatically uses offline heuristic fallbacks.
 
 ## Current Limitations
 

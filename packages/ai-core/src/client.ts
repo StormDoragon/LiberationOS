@@ -1,6 +1,11 @@
 import OpenAI from "openai";
 import type { GeneratedContentBatchItem, ViralContentGoal } from "@liberation-os/types";
 
+interface LLMClientConfig {
+  openai: OpenAI;
+  model: string;
+}
+
 // ---------------------------------------------------------------------------
 // Usage / pricing helpers
 // ---------------------------------------------------------------------------
@@ -102,21 +107,41 @@ function buildFallbackResponse<T>(prompt: string): T {
   throw new Error("OPENAI_API_KEY is missing and no fallback response matches this prompt");
 }
 
+function resolveLLMConfig(): LLMClientConfig | null {
+  const baseURL = process.env.OPENAI_BASE_URL ?? process.env.LLM_BASE_URL;
+  const apiKey =
+    process.env.OPENAI_API_KEY ??
+    process.env.LOCAL_LLM_API_KEY ??
+    (baseURL ? "local-llm" : undefined);
+
+  if (!apiKey) {
+    return null;
+  }
+
+  const model =
+    process.env.OPENAI_MODEL ??
+    process.env.LOCAL_LLM_MODEL ??
+    (baseURL ? "llama3.1:8b" : "gpt-4.1-mini");
+
+  return {
+    openai: new OpenAI({ apiKey, baseURL }),
+    model,
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Core: generateJSON
 // ---------------------------------------------------------------------------
 
 export async function generateJSON<T>(prompt: string): Promise<T> {
-  const apiKey = process.env.OPENAI_API_KEY;
+  const llm = resolveLLMConfig();
 
-  if (!apiKey) {
+  if (!llm) {
     return buildFallbackResponse<T>(prompt);
   }
 
-  const openai = new OpenAI({ apiKey });
-  const model = process.env.OPENAI_MODEL ?? "gpt-4.1-mini";
-  const response = await openai.chat.completions.create({
-    model,
+  const response = await llm.openai.chat.completions.create({
+    model: llm.model,
     messages: [{ role: "user", content: prompt }],
     temperature: 0.7,
   });
@@ -143,9 +168,9 @@ export interface LLMCallResult<T> {
 export async function generateJSONWithUsage<T>(
   prompt: string,
 ): Promise<LLMCallResult<T>> {
-  const apiKey = process.env.OPENAI_API_KEY;
+  const llm = resolveLLMConfig();
 
-  if (!apiKey) {
+  if (!llm) {
     const result = buildFallbackResponse<T>(prompt);
     return {
       result,
@@ -154,10 +179,8 @@ export async function generateJSONWithUsage<T>(
     };
   }
 
-  const openai = new OpenAI({ apiKey });
-  const model = process.env.OPENAI_MODEL ?? "gpt-4.1-mini";
-  const response = await openai.chat.completions.create({
-    model,
+  const response = await llm.openai.chat.completions.create({
+    model: llm.model,
     messages: [{ role: "user", content: prompt }],
     temperature: 0.7,
   });
@@ -200,9 +223,9 @@ export async function callWithTools(
   tools: ToolDefinition[],
   toolHandler: (name: string, args: unknown) => Promise<unknown>,
 ): Promise<ToolCallResult> {
-  const apiKey = process.env.OPENAI_API_KEY;
+  const llm = resolveLLMConfig();
 
-  if (!apiKey) {
+  if (!llm) {
     const firstTool = tools[0];
     if (!firstTool) {
       return {
@@ -221,8 +244,8 @@ export async function callWithTools(
     };
   }
 
-  const openai = new OpenAI({ apiKey });
-  const model = process.env.OPENAI_MODEL ?? "gpt-4.1-mini";
+  const openai = llm.openai;
+  const model = llm.model;
 
   const messages: OpenAI.ChatCompletionMessageParam[] = [
     { role: "system", content: systemPrompt },
