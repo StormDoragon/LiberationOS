@@ -103,7 +103,7 @@ async function buildOAuth1Header(
     ["sign"],
   );
   const signatureBuffer = await crypto.subtle.sign("HMAC", key, enc.encode(signatureBase));
-  const signature = btoa(String.fromCharCode(...new Uint8Array(signatureBuffer)));
+  const signature = btoa(Array.from(new Uint8Array(signatureBuffer), (b) => String.fromCharCode(b)).join(""));
 
   const allParams = { ...params, oauth_signature: signature };
   const headerParams = Object.entries(allParams)

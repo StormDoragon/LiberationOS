@@ -210,7 +210,7 @@ export async function runProject(projectId: string, registry: AgentRegistry) {
 
 function normalizeContentDrafts(artifacts: WorkflowArtifacts, interpretation: GoalInterpretation): ContentItemDraft[] {
   // viral.compose-drafts stores its output under the step key "drafts"
-  if (Array.isArray(artifacts.drafts) && (artifacts.drafts as unknown[]).length > 0) {
+  if (Array.isArray(artifacts.drafts) && artifacts.drafts.length > 0) {
     return artifacts.drafts as ContentItemDraft[];
   }
 
