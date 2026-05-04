@@ -151,7 +151,13 @@ export async function generateJSON<T>(prompt: string): Promise<T> {
   try {
     return JSON.parse(text) as T;
   } catch {
-    throw new Error("Invalid JSON from AI");
+    // AI sometimes wraps JSON in markdown code fences — strip them and retry
+    const stripped = text.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
+    try {
+      return JSON.parse(stripped) as T;
+    } catch {
+      throw new Error("Invalid JSON from AI");
+    }
   }
 }
 
@@ -189,9 +195,18 @@ export async function generateJSONWithUsage<T>(
   const tokensIn = response.usage?.prompt_tokens ?? 0;
   const tokensOut = response.usage?.completion_tokens ?? 0;
 
+  const parseJson = (raw: string): T => {
+    try {
+      return JSON.parse(raw) as T;
+    } catch {
+      const stripped = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
+      return JSON.parse(stripped) as T;
+    }
+  };
+
   try {
     return {
-      result: JSON.parse(text) as T,
+      result: parseJson(text),
       text,
       usage: {
         tokensIn,

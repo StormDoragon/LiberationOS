@@ -1,18 +1,17 @@
 import { createDefaultRegistry } from "@liberation-os/agent-packs";
 import type { WorkflowExecutionResult } from "@liberation-os/types";
 import { interpretGoal } from "@liberation-os/ai-core";
-import type { GoalRequest } from "@liberation-os/types";
+import type { GoalRequest, GoalInterpretation } from "@liberation-os/types";
 
 /**
  * Lightweight single-shot workflow runner.
- * Interprets the goal, runs the viral-content pipeline, and returns results.
+ * Interprets the goal, runs the appropriate pipeline, and returns results.
  * Used by the async queue path (executeQueuedWorkflow).
  */
 export async function runWorkflow(goal: string): Promise<WorkflowExecutionResult> {
   const request: GoalRequest = { goal };
   const structuredGoal = await interpretGoal(request);
 
-  // Use the registry agents to generate content for viral_content_batch
   const registry = createDefaultRegistry();
   const context = {
     userId: "system",
@@ -58,14 +57,61 @@ export async function runWorkflow(goal: string): Promise<WorkflowExecutionResult
     };
   }
 
-  // For non-viral goal types, return empty items (content is handled differently)
+  if (structuredGoal.goalType === "affiliate_site_autopilot") {
+    const siteMapAgent = registry.get("affiliate.generate-site-map");
+    artifacts.siteMap = await siteMapAgent.execute(structuredGoal as never, context, artifacts);
+
+    const keywordsAgent = registry.get("affiliate.generate-keywords");
+    artifacts.keywords = await keywordsAgent.execute(structuredGoal as never, context, artifacts);
+
+    const briefsAgent = registry.get("affiliate.generate-briefs");
+    artifacts.briefs = await briefsAgent.execute(structuredGoal as never, context, artifacts);
+
+    const articlesAgent = registry.get("affiliate.generate-articles");
+    const articles = await articlesAgent.execute(structuredGoal as never, context, artifacts) as Array<{
+      title: string; body: string; slug: string;
+    }>;
+    artifacts.articles = articles;
+
+    return {
+      structuredGoal: {
+        goalType: structuredGoal.goalType,
+        niche: structuredGoal.niche,
+        platforms: structuredGoal.platforms,
+        quantity: structuredGoal.quantity ?? 12,
+      },
+      items: articles.map((a) => ({
+        hook: a.title,
+        script: a.body,
+        caption: `/${a.slug}`,
+      })),
+    };
+  }
+
+  // social_campaign
+  const calendarAgent = registry.get("social.generate-calendar");
+  artifacts.campaignCalendar = await calendarAgent.execute(structuredGoal as never, context, artifacts);
+
+  const postsAgent = registry.get("social.generate-posts");
+  const posts = await postsAgent.execute(structuredGoal as never, context, artifacts) as Array<{
+    title: string; body: string; platform: string;
+  }>;
+  artifacts.channelPosts = posts;
+
+  const scheduleAgent = registry.get("social.generate-schedule");
+  artifacts.schedule = await scheduleAgent.execute(structuredGoal as never, context, artifacts);
+
   return {
     structuredGoal: {
-      goalType: "viral_content_batch",
+      goalType: structuredGoal.goalType,
       niche: structuredGoal.niche,
       platforms: structuredGoal.platforms,
       quantity: structuredGoal.quantity ?? 12,
     },
-    items: [],
+    items: posts.map((p) => ({
+      hook: p.title,
+      script: p.body,
+      caption: p.platform,
+    })),
   };
 }

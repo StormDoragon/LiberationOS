@@ -5,9 +5,10 @@ export function buildAffiliateSiteWorkflow(input: GoalRequest): WorkflowPlan {
     workflowName: "affiliate-site-autopilot",
     goalType: "affiliate_site_autopilot",
     steps: [
-      { key: "site-map", agentName: "affiliate-planner-agent", input },
-      { key: "briefs", agentName: "article-brief-agent", input },
-      { key: "drafts", agentName: "article-writer-agent", input }
+      { key: "siteMap", agentName: "affiliate.generate-site-map", input },
+      { key: "keywords", agentName: "affiliate.generate-keywords", input },
+      { key: "briefs", agentName: "affiliate.generate-briefs", input },
+      { key: "articles", agentName: "affiliate.generate-articles", input },
     ]
   };
 }

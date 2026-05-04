@@ -2,11 +2,12 @@ import type { GoalRequest, WorkflowPlan } from "@liberation-os/types";
 
 export function buildSocialSchedulerWorkflow(input: GoalRequest): WorkflowPlan {
   return {
-    workflowName: "social-scheduler",
+    workflowName: "social-campaign-scheduler",
     goalType: "social_campaign",
     steps: [
-      { key: "repurpose", agentName: "platform-repurposer-agent", input },
-      { key: "schedule", agentName: "social-scheduler-agent", input }
+      { key: "campaignCalendar", agentName: "social.generate-calendar", input },
+      { key: "channelPosts", agentName: "social.generate-posts", input },
+      { key: "schedule", agentName: "social.generate-schedule", input },
     ]
   };
 }

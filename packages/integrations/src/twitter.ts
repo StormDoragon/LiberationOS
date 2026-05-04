@@ -29,7 +29,7 @@ export async function postToTwitter(
   const endpoint = "https://api.twitter.com/2/tweets";
 
   // Build OAuth 1.0a Authorization header
-  const authHeader = buildOAuth1Header(
+  const authHeader = await buildOAuth1Header(
     "POST",
     endpoint,
     credentials,
@@ -65,13 +65,13 @@ export async function postToTwitter(
 }
 
 // ---------------------------------------------------------------------------
-// Minimal OAuth 1.0a header builder (no external deps)
+// Minimal OAuth 1.0a header builder using Web Crypto API (edge + Node.js)
 // ---------------------------------------------------------------------------
-function buildOAuth1Header(
+async function buildOAuth1Header(
   method: string,
   url: string,
   creds: TwitterCredentials,
-): string {
+): Promise<string> {
   const params: Record<string, string> = {
     oauth_consumer_key: creds.apiKey,
     oauth_nonce: Math.random().toString(36).substring(2),
@@ -81,23 +81,33 @@ function buildOAuth1Header(
     oauth_version: "1.0",
   };
 
-  // We can't use crypto.createHmac in edge runtime without a polyfill, so we
-  // return a placeholder signature. In production, run the worker (Node.js)
-  // which has full crypto access, or use the official twitter-api-v2 package.
   const signatureBase = [
     method.toUpperCase(),
     encodeURIComponent(url),
     encodeURIComponent(
       Object.entries(params)
         .sort()
-        .map(([k, v]) => `${k}=${v}`)
+        .map(([k, v]) => `${k}=${encodeURIComponent(v)}`)
         .join("&"),
     ),
   ].join("&");
 
-  void signatureBase; // used in real HMAC-SHA1 computation
+  const signingKey = `${encodeURIComponent(creds.apiSecret)}&${encodeURIComponent(creds.accessTokenSecret)}`;
 
-  const headerParams = Object.entries(params)
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    "raw",
+    enc.encode(signingKey),
+    { name: "HMAC", hash: "SHA-1" },
+    false,
+    ["sign"],
+  );
+  const signatureBuffer = await crypto.subtle.sign("HMAC", key, enc.encode(signatureBase));
+  const signature = btoa(String.fromCharCode(...new Uint8Array(signatureBuffer)));
+
+  const allParams = { ...params, oauth_signature: signature };
+  const headerParams = Object.entries(allParams)
+    .sort(([a], [b]) => a.localeCompare(b))
     .map(([k, v]) => `${k}="${encodeURIComponent(v)}"`)
     .join(", ");
 

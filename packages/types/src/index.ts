@@ -225,7 +225,12 @@ export interface ProjectSnapshot {
 }
 
 export interface WorkflowExecutionResult {
-  structuredGoal: ViralContentGoal;
+  structuredGoal: {
+    goalType: GoalType;
+    niche: string;
+    platforms: string[];
+    quantity: number;
+  };
   items: GeneratedContentBatchItem[];
 }
 
