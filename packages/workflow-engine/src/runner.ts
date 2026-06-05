@@ -130,7 +130,7 @@ export async function runProject(projectId: string, registry: AgentRegistry) {
       });
 
       const stepStart = Date.now();
-      const output = await agent.execute(dbStep.input as never, context, artifacts);
+      const output = await agent.execute(dbStep.input, context, artifacts);
       const durationMs = Date.now() - stepStart;
 
       traceRecorder.addEvent({

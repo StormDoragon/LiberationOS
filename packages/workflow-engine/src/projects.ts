@@ -9,7 +9,7 @@ import type {
   WorkflowStepSnapshot
 } from "@liberation-os/types";
 import { createLogger } from "@liberation-os/utils";
-import { workflowJobName, workflowQueue } from "./queue";
+import { getWorkflowQueue, workflowJobName } from "./queue";
 import { runWorkflow } from "./run-workflow";
 
 const logger = createLogger("workflow-engine");
@@ -156,7 +156,7 @@ export async function createProjectAndQueue(goal: string): Promise<CreateProject
     goal
   };
 
-  const job = await workflowQueue.add(workflowJobName, payload, {
+  const job = await getWorkflowQueue().add(workflowJobName, payload, {
     removeOnComplete: 100,
     removeOnFail: 100
   });
