@@ -267,14 +267,14 @@ export function BulkActions({ projectId, draftCount, approvedCount }: {
   approvedCount: number;
 }) {
   const [action, setAction] = useState<string | null>(null);
-  const [progress, setProgress] = useState({ done: 0, total: 0 });
+  const [progress, setProgress] = useState({ done: 0, total: 0, failed: 0 });
   const router = useRouter();
 
   async function bulkApprove() {
     setAction("Approving");
     const res = await fetch(`/api/projects/${projectId}/approve-all`, { method: "POST" });
     const data = await res.json();
-    setProgress({ done: data.updated, total: data.updated });
+    setProgress({ done: data.updated, total: data.updated, failed: 0 });
     setTimeout(() => { setAction(null); router.refresh(); }, 600);
   }
 
@@ -282,7 +282,7 @@ export function BulkActions({ projectId, draftCount, approvedCount }: {
     setAction("Publishing");
     const res = await fetch(`/api/projects/${projectId}/publish-all`, { method: "POST" });
     const data = await res.json();
-    setProgress({ done: data.updated, total: data.updated });
+    setProgress({ done: data.updated, total: data.updated + (data.failed ?? 0), failed: data.failed ?? 0 });
     setTimeout(() => { setAction(null); router.refresh(); }, 600);
   }
 
@@ -294,7 +294,7 @@ export function BulkActions({ projectId, draftCount, approvedCount }: {
         <div>
           <div className="row" style={{ marginBottom: 6 }}>
             <span className="small">{action}...</span>
-            <span className="small">{progress.done} items</span>
+            <span className="small">{progress.done} {action === "Approving" ? "approved" : "published"}{progress.failed ? ` · ${progress.failed} failed` : ""}</span>
           </div>
           <div className="progress-track">
             <div className="progress-bar" style={{ width: `${pct}%` }} />

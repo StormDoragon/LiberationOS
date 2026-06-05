@@ -10,7 +10,7 @@ interface AttentionItem {
   title: string | null;
   body: string;
   status: string;
-  project: { id: string; title: string; goalType: string };
+  project: { id: string; title: string; goalType: string; workspaceId: string };
 }
 
 interface Suggestion {
@@ -29,16 +29,40 @@ function ContentCard({ item, onUpdate }: { item: AttentionItem; onUpdate: () => 
   const [loading, setLoading] = useState(false);
   const [suggesting, setSuggesting] = useState(false);
   const [suggestion, setSuggestion] = useState<Suggestion | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   async function updateStatus(newStatus: string) {
     setLoading(true);
+    setError(null);
     try {
-      await fetch(`/api/content/${item.id}`, {
+      const response = await fetch(`/api/content/${item.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus }),
       });
+      if (!response.ok) throw new Error("Failed to update status");
       onUpdate();
+    } catch (updateError) {
+      setError(updateError instanceof Error ? updateError.message : "Failed to update status");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function publishItem() {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(`/api/content/${item.id}/publish`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? "Publish failed");
+      onUpdate();
+    } catch (publishError) {
+      setError(publishError instanceof Error ? publishError.message : "Publish failed");
     } finally {
       setLoading(false);
     }
@@ -94,7 +118,7 @@ function ContentCard({ item, onUpdate }: { item: AttentionItem; onUpdate: () => 
             <button
               className="button primary"
               style={{ fontSize: 12, padding: "4px 10px" }}
-              onClick={() => updateStatus("published")}
+              onClick={publishItem}
               disabled={loading}
             >
               Publish
@@ -102,6 +126,8 @@ function ContentCard({ item, onUpdate }: { item: AttentionItem; onUpdate: () => 
           )}
         </div>
       </div>
+
+      {error && <p className="error" style={{ margin: 0 }}>{error}</p>}
 
       <pre className="code" style={{ maxHeight: 120, overflow: "hidden" }}>{item.body}</pre>
 
@@ -176,10 +202,10 @@ export default function AttentionPage() {
     setBulkProgress({ done: 0, total: approved.length });
 
     for (let i = 0; i < approved.length; i++) {
-      await fetch(`/api/content/${approved[i].id}`, {
-        method: "PATCH",
+      await fetch(`/api/content/${approved[i].id}/publish`, {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "published" }),
+        body: JSON.stringify({}),
       });
       setBulkProgress({ done: i + 1, total: approved.length });
     }

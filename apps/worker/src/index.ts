@@ -1,7 +1,7 @@
 import { Worker } from "bullmq";
 import { redisConnection } from "./queue";
 import { createDefaultRegistry } from "@liberation-os/agent-packs";
-import { runProject, workflowQueueName, workflowJobName, executeQueuedWorkflow } from "@liberation-os/workflow-engine";
+import { runProject, workflowQueueName, executeQueuedWorkflow } from "@liberation-os/workflow-engine";
 import type { WorkflowJobPayload } from "@liberation-os/types";
 
 const registry = createDefaultRegistry();
