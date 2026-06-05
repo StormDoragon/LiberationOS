@@ -17,10 +17,6 @@ interface TraceViewerProps {
   summary?: TraceSummary | null;
 }
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
 function groupByStep(events: TraceEvent[]): Map<string, TraceEvent[]> {
   const groups = new Map<string, TraceEvent[]>();
   for (const event of events) {
@@ -41,64 +37,29 @@ function formatTokens(n: number): string {
   return String(n);
 }
 
-function eventTypeColor(type: TraceEvent["type"]): string {
-  switch (type) {
-    case "llm_call":
-      return "bg-blue-500/20 text-blue-300 border border-blue-500/30";
-    case "tool_call":
-      return "bg-purple-500/20 text-purple-300 border border-purple-500/30";
-    case "step_start":
-      return "bg-slate-500/20 text-slate-400 border border-slate-500/30";
-    case "step_end":
-      return "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
-    case "error":
-      return "bg-red-500/20 text-red-400 border border-red-500/30";
-    default:
-      return "bg-slate-500/20 text-slate-400 border border-slate-500/30";
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Sub-components
-// ---------------------------------------------------------------------------
-
 function LLMCallCard({ event }: { event: TraceEvent }) {
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 p-3 text-sm">
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <span className="rounded px-1.5 py-0.5 text-xs font-mono bg-blue-500/20 text-blue-300">
-            LLM
-          </span>
-          <span className="text-slate-300 font-medium">
-            {event.model ?? "unknown model"}
-          </span>
+    <div className="trace-call trace-call-llm">
+      <div className="trace-row">
+        <div className="trace-inline">
+          <span className="trace-pill trace-pill-llm">LLM</span>
+          <span className="trace-call-title">{event.model ?? "unknown model"}</span>
         </div>
-        <div className="flex items-center gap-3 text-xs text-slate-500">
+        <div className="trace-meta">
           {(event.tokensIn ?? 0) > 0 && (
-            <span>
-              ↑ {formatTokens(event.tokensIn!)} &nbsp;↓ {formatTokens(event.tokensOut ?? 0)}
-            </span>
+            <span>↑ {formatTokens(event.tokensIn!)} · ↓ {formatTokens(event.tokensOut ?? 0)}</span>
           )}
-          {(event.costUsd ?? 0) > 0 && (
-            <span className="text-amber-400">{formatCost(event.costUsd!)}</span>
-          )}
+          {(event.costUsd ?? 0) > 0 && <span className="trace-cost">{formatCost(event.costUsd!)}</span>}
         </div>
       </div>
 
       {event.prompt && (
-        <button
-          type="button"
-          onClick={() => setExpanded((v) => !v)}
-          className="mt-2 w-full text-left"
-        >
-          <p className="text-xs text-slate-500 hover:text-slate-300 transition-colors">
-            {expanded ? "▼ Hide prompt" : "▶ Show prompt"}
-          </p>
+        <button type="button" onClick={() => setExpanded((value) => !value)} className="trace-disclosure">
+          <span>{expanded ? "▼ Hide prompt" : "▶ Show prompt"}</span>
           {expanded && (
-            <pre className="mt-1 whitespace-pre-wrap text-xs text-slate-400 bg-slate-900/50 rounded p-2 max-h-40 overflow-y-auto">
+            <pre className="trace-code">
               {event.prompt.slice(0, 2000)}
               {event.prompt.length > 2000 && "\n…(truncated)"}
             </pre>
@@ -107,9 +68,9 @@ function LLMCallCard({ event }: { event: TraceEvent }) {
       )}
 
       {event.modelResponse && (
-        <div className="mt-2">
-          <p className="text-xs text-slate-500 mb-1">Response:</p>
-          <p className="text-xs text-slate-300 bg-slate-900/50 rounded p-2 line-clamp-3">
+        <div className="trace-response">
+          <p className="trace-label">Response:</p>
+          <p className="trace-code trace-code-clamped">
             {event.modelResponse.slice(0, 300)}
             {event.modelResponse.length > 300 && "…"}
           </p>
@@ -123,36 +84,26 @@ function ToolCallCard({ event }: { event: TraceEvent }) {
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <div className="rounded-lg border border-purple-500/20 bg-purple-500/5 p-3 text-sm">
-      <div className="flex items-center gap-2">
-        <span className="rounded px-1.5 py-0.5 text-xs font-mono bg-purple-500/20 text-purple-300">
-          TOOL
-        </span>
-        <span className="text-slate-300 font-medium font-mono">
-          {event.toolName ?? "unknown"}
-        </span>
-        <button
-          type="button"
-          onClick={() => setExpanded((v) => !v)}
-          className="ml-auto text-xs text-slate-500 hover:text-slate-300 transition-colors"
-        >
+    <div className="trace-call trace-call-tool">
+      <div className="trace-row">
+        <div className="trace-inline">
+          <span className="trace-pill trace-pill-tool">TOOL</span>
+          <span className="trace-call-title trace-mono">{event.toolName ?? "unknown"}</span>
+        </div>
+        <button type="button" onClick={() => setExpanded((value) => !value)} className="trace-link-button">
           {expanded ? "▼ hide" : "▶ details"}
         </button>
       </div>
 
       {expanded && (
-        <div className="mt-2 grid grid-cols-2 gap-2">
+        <div className="trace-detail-grid">
           <div>
-            <p className="text-xs text-slate-500 mb-1">Args</p>
-            <pre className="text-xs text-slate-400 bg-slate-900/50 rounded p-2 overflow-x-auto max-h-28">
-              {JSON.stringify(event.toolArgs, null, 2)}
-            </pre>
+            <p className="trace-label">Args</p>
+            <pre className="trace-code">{JSON.stringify(event.toolArgs, null, 2)}</pre>
           </div>
           <div>
-            <p className="text-xs text-slate-500 mb-1">Result</p>
-            <pre className="text-xs text-slate-400 bg-slate-900/50 rounded p-2 overflow-x-auto max-h-28">
-              {JSON.stringify(event.toolResult, null, 2)}
-            </pre>
+            <p className="trace-label">Result</p>
+            <pre className="trace-code">{JSON.stringify(event.toolResult, null, 2)}</pre>
           </div>
         </div>
       )}
@@ -163,30 +114,22 @@ function ToolCallCard({ event }: { event: TraceEvent }) {
 function StepGroup({ stepKey, events }: { stepKey: string; events: TraceEvent[] }) {
   const [collapsed, setCollapsed] = useState(false);
 
-  const endEvent = events.find((e) => e.type === "step_end");
+  const endEvent = events.find((event) => event.type === "step_end");
   const agentName = events[0]?.agentName ?? stepKey;
   const durationMs = endEvent?.durationMs;
-
-  const innerEvents = events.filter(
-    (e) => e.type !== "step_start" && e.type !== "step_end",
-  );
+  const innerEvents = events.filter((event) => event.type !== "step_start" && event.type !== "step_end");
 
   return (
-    <div className="rounded-xl border border-slate-700/50 bg-slate-800/30 overflow-hidden">
-      {/* Step header */}
-      <button
-        type="button"
-        onClick={() => setCollapsed((v) => !v)}
-        className="w-full flex items-center justify-between px-4 py-3 hover:bg-slate-700/20 transition-colors"
-      >
-        <div className="flex items-center gap-3">
-          <span className="text-slate-400 text-sm">{collapsed ? "▶" : "▼"}</span>
-          <div className="text-left">
-            <p className="text-sm font-medium text-slate-200">{stepKey}</p>
-            <p className="text-xs text-slate-500">{agentName}</p>
+    <div className="trace-step">
+      <button type="button" onClick={() => setCollapsed((value) => !value)} className="trace-step-header">
+        <div className="trace-inline">
+          <span className="trace-chevron">{collapsed ? "▶" : "▼"}</span>
+          <div style={{ textAlign: "left" }}>
+            <p className="trace-step-title">{stepKey}</p>
+            <p className="trace-meta">{agentName}</p>
           </div>
         </div>
-        <div className="flex items-center gap-3 text-xs text-slate-500">
+        <div className="trace-meta">
           {durationMs !== undefined && (
             <span>{durationMs < 1000 ? `${durationMs}ms` : `${(durationMs / 1000).toFixed(1)}s`}</span>
           )}
@@ -194,19 +137,15 @@ function StepGroup({ stepKey, events }: { stepKey: string; events: TraceEvent[] 
         </div>
       </button>
 
-      {/* Step events */}
       {!collapsed && innerEvents.length > 0 && (
-        <div className="px-4 pb-4 space-y-2">
+        <div className="trace-step-body">
           {innerEvents.map((event) => {
             if (event.type === "llm_call") return <LLMCallCard key={event.id} event={event} />;
             if (event.type === "tool_call") return <ToolCallCard key={event.id} event={event} />;
             if (event.type === "error") {
               return (
-                <div
-                  key={event.id}
-                  className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-400"
-                >
-                  <span className="font-medium">Error:</span> {event.error}
+                <div key={event.id} className="trace-error">
+                  <span style={{ fontWeight: 600 }}>Error:</span> {event.error}
                 </div>
               );
             }
@@ -215,24 +154,16 @@ function StepGroup({ stepKey, events }: { stepKey: string; events: TraceEvent[] 
         </div>
       )}
 
-      {!collapsed && innerEvents.length === 0 && (
-        <p className="px-4 pb-3 text-xs text-slate-600">No inner events recorded.</p>
-      )}
+      {!collapsed && innerEvents.length === 0 && <p className="trace-empty">No inner events recorded.</p>}
     </div>
   );
 }
 
-// ---------------------------------------------------------------------------
-// Main component
-// ---------------------------------------------------------------------------
-
 export default function TraceViewer({ events, summary }: TraceViewerProps) {
   if (events.length === 0) {
     return (
-      <div className="rounded-xl border border-slate-700/50 bg-slate-800/20 p-6 text-center">
-        <p className="text-slate-500 text-sm">
-          No trace events yet. Run the project to see a detailed execution trace.
-        </p>
+      <div className="trace-empty-panel">
+        <p className="small">No trace events yet. Run the project to see a detailed execution trace.</p>
       </div>
     );
   }
@@ -240,44 +171,29 @@ export default function TraceViewer({ events, summary }: TraceViewerProps) {
   const groups = groupByStep(events);
 
   return (
-    <div className="space-y-4">
-      {/* Summary bar */}
+    <div className="trace-viewer">
       {summary && (
-        <div className="rounded-xl border border-slate-700/50 bg-slate-800/30 p-4">
-          <h3 className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-3">
-            Trace Summary
-          </h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div className="trace-summary">
+          <h3 className="trace-summary-title">Trace Summary</h3>
+          <div className="trace-summary-grid">
             {[
               { label: "Steps", value: groups.size },
               { label: "Events", value: summary.totalEvents },
               { label: "LLM Calls", value: summary.llmCalls },
               { label: "Tool Calls", value: summary.toolCalls },
-              {
-                label: "Tokens In",
-                value: formatTokens(summary.tokensIn),
-              },
-              {
-                label: "Est. Cost",
-                value: formatCost(summary.costUsd),
-                highlight: summary.costUsd > 0,
-              },
+              { label: "Tokens In", value: formatTokens(summary.tokensIn) },
+              { label: "Est. Cost", value: formatCost(summary.costUsd), highlight: summary.costUsd > 0 },
             ].map(({ label, value, highlight }) => (
-              <div key={label} className="text-center">
-                <p
-                  className={`text-lg font-semibold ${highlight ? "text-amber-400" : "text-slate-200"}`}
-                >
-                  {value}
-                </p>
-                <p className="text-xs text-slate-500">{label}</p>
+              <div key={label} className="trace-summary-item">
+                <p className={highlight ? "trace-summary-value trace-cost" : "trace-summary-value"}>{value}</p>
+                <p className="trace-label">{label}</p>
               </div>
             ))}
           </div>
         </div>
       )}
 
-      {/* Step timeline */}
-      <div className="space-y-3">
+      <div className="trace-viewer">
         {Array.from(groups.entries()).map(([stepKey, stepEvents]) => (
           <StepGroup key={stepKey} stepKey={stepKey} events={stepEvents} />
         ))}

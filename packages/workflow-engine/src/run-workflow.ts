@@ -29,16 +29,16 @@ export async function runWorkflow(goal: string): Promise<WorkflowExecutionResult
 
   if (structuredGoal.goalType === "viral_content_batch") {
     const pillarsAgent = registry.get("viral.generate-pillars");
-    artifacts.pillars = await pillarsAgent.execute(structuredGoal as never, context, artifacts);
+    artifacts.pillars = await pillarsAgent.execute(structuredGoal, context, artifacts);
 
     const hooksAgent = registry.get("viral.generate-hooks");
-    artifacts.hooks = await hooksAgent.execute(structuredGoal as never, context, artifacts);
+    artifacts.hooks = await hooksAgent.execute(structuredGoal, context, artifacts);
 
     const scriptsAgent = registry.get("viral.generate-scripts");
-    artifacts.scripts = await scriptsAgent.execute(structuredGoal as never, context, artifacts);
+    artifacts.scripts = await scriptsAgent.execute(structuredGoal, context, artifacts);
 
     const captionsAgent = registry.get("viral.generate-captions");
-    const captions = await captionsAgent.execute(structuredGoal as never, context, artifacts) as Array<{
+    const captions = await captionsAgent.execute(structuredGoal, context, artifacts) as Array<{
       hook: string; script: string; caption: string;
     }>;
     artifacts.captions = captions;

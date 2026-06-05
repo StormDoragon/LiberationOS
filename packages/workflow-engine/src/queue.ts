@@ -3,7 +3,9 @@ import type { ConnectionOptions } from "bullmq";
 import type { WorkflowJobPayload } from "@liberation-os/types";
 
 export const workflowQueueName = "workflow";
-const workflowJobName = "run-project";
+export const workflowJobName = "run-project";
+
+let workflowQueue: Queue<WorkflowJobPayload, unknown, typeof workflowJobName> | null = null;
 
 export function createRedisConnection(): ConnectionOptions {
   const redisUrl = new URL(process.env.REDIS_URL ?? "redis://127.0.0.1:6379");
@@ -21,8 +23,10 @@ export function createRedisConnection(): ConnectionOptions {
   };
 }
 
-export const workflowQueue = new Queue<WorkflowJobPayload, unknown, typeof workflowJobName>(workflowQueueName, {
-  connection: createRedisConnection()
-});
+export function getWorkflowQueue(): Queue<WorkflowJobPayload, unknown, typeof workflowJobName> {
+  workflowQueue ??= new Queue<WorkflowJobPayload, unknown, typeof workflowJobName>(workflowQueueName, {
+    connection: createRedisConnection()
+  });
 
-export { workflowJobName };
+  return workflowQueue;
+}

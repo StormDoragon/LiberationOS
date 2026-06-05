@@ -9,7 +9,7 @@ import type {
   WorkflowStepSnapshot
 } from "@liberation-os/types";
 import { createLogger } from "@liberation-os/utils";
-import { workflowJobName, workflowQueue } from "./queue";
+import { getWorkflowQueue, workflowJobName } from "./queue";
 import { runWorkflow } from "./run-workflow";
 
 const logger = createLogger("workflow-engine");
@@ -156,9 +156,14 @@ export async function createProjectAndQueue(goal: string): Promise<CreateProject
     goal
   };
 
-  const job = await workflowQueue.add(workflowJobName, payload, {
-    removeOnComplete: 100,
-    removeOnFail: 100
+  const job = await getWorkflowQueue().add(workflowJobName, payload, {
+    attempts: Number(process.env.WORKFLOW_JOB_ATTEMPTS ?? "3"),
+    backoff: {
+      type: "exponential",
+      delay: Number(process.env.WORKFLOW_JOB_BACKOFF_MS ?? "5000")
+    },
+    removeOnComplete: Number(process.env.WORKFLOW_REMOVE_ON_COMPLETE ?? "100"),
+    removeOnFail: Number(process.env.WORKFLOW_REMOVE_ON_FAIL ?? "100")
   });
 
   return {
