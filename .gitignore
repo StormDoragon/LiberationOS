@@ -1,8 +1,25 @@
-node_modules
-.next
-dist
-coverage
+# Dependencies
+node_modules/
+.turbo/
+.next/
+dist/
+coverage/
+
+# Lockfiles - use pnpm
+package-lock.json
+yarn.lock
+
+# Build outputs
+*.tsbuildinfo
+**/.turbo
+**/dist
+**/build
+
+# Archives
+*.zip
+liberation-os-*.zip
+
+# Local env
 .env
 .env.local
-.turbo
-pnpm-lock.yaml
+.env.*.local
