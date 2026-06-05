@@ -13,7 +13,7 @@ export async function GET() {
       ],
     },
     include: {
-      project: { select: { id: true, title: true, goalType: true } },
+      project: { select: { id: true, title: true, goalType: true, workspaceId: true } },
     },
     orderBy: { createdAt: "desc" },
     take: 100,

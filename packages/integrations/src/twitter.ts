@@ -1,3 +1,5 @@
+import { createHmac, randomBytes } from "node:crypto";
+
 export interface TwitterCredentials {
   apiKey: string;
   apiSecret: string;
@@ -67,6 +69,11 @@ export async function postToTwitter(
 // ---------------------------------------------------------------------------
 // Minimal OAuth 1.0a header builder (no external deps)
 // ---------------------------------------------------------------------------
+function encodeOAuth(value: string): string {
+  return encodeURIComponent(value)
+    .replace(/[!*()']/g, (char) => `%${char.charCodeAt(0).toString(16).toUpperCase()}`);
+}
+
 function buildOAuth1Header(
   method: string,
   url: string,
@@ -74,31 +81,35 @@ function buildOAuth1Header(
 ): string {
   const params: Record<string, string> = {
     oauth_consumer_key: creds.apiKey,
-    oauth_nonce: Math.random().toString(36).substring(2),
+    oauth_nonce: randomBytes(16).toString("hex"),
     oauth_signature_method: "HMAC-SHA1",
     oauth_timestamp: Math.floor(Date.now() / 1000).toString(),
     oauth_token: creds.accessToken,
     oauth_version: "1.0",
   };
 
-  // We can't use crypto.createHmac in edge runtime without a polyfill, so we
-  // return a placeholder signature. In production, run the worker (Node.js)
-  // which has full crypto access, or use the official twitter-api-v2 package.
+  const normalizedParams = Object.entries(params)
+    .sort(([leftKey, leftValue], [rightKey, rightValue]) => {
+      const keyCompare = leftKey.localeCompare(rightKey);
+      return keyCompare === 0 ? leftValue.localeCompare(rightValue) : keyCompare;
+    })
+    .map(([key, value]) => `${encodeOAuth(key)}=${encodeOAuth(value)}`)
+    .join("&");
+
   const signatureBase = [
     method.toUpperCase(),
-    encodeURIComponent(url),
-    encodeURIComponent(
-      Object.entries(params)
-        .sort()
-        .map(([k, v]) => `${k}=${v}`)
-        .join("&"),
-    ),
+    encodeOAuth(url),
+    encodeOAuth(normalizedParams),
   ].join("&");
 
-  void signatureBase; // used in real HMAC-SHA1 computation
+  const signingKey = `${encodeOAuth(creds.apiSecret)}&${encodeOAuth(creds.accessTokenSecret)}`;
+  const oauthSignature = createHmac("sha1", signingKey)
+    .update(signatureBase)
+    .digest("base64");
 
-  const headerParams = Object.entries(params)
-    .map(([k, v]) => `${k}="${encodeURIComponent(v)}"`)
+  const headerParams = Object.entries({ ...params, oauth_signature: oauthSignature })
+    .sort(([leftKey], [rightKey]) => leftKey.localeCompare(rightKey))
+    .map(([key, value]) => `${encodeOAuth(key)}="${encodeOAuth(value)}"`)
     .join(", ");
 
   return `OAuth ${headerParams}`;

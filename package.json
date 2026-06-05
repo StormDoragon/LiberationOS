@@ -18,7 +18,10 @@
     "db:studio": "pnpm --filter @liberation-os/db prisma:studio",
     "setup": "pnpm install && pnpm db:generate && pnpm db:push && pnpm db:seed",
     "infra:up": "docker compose up -d",
-    "infra:down": "docker compose down"
+    "infra:down": "docker compose down",
+    "start:web": "pnpm --filter @liberation-os/web start",
+    "start:worker": "pnpm --filter @liberation-os/worker start",
+    "db:deploy": "pnpm --filter @liberation-os/db prisma:deploy"
   },
   "devDependencies": {
     "turbo": "^2.5.0",

@@ -1,0 +1,14 @@
+.git
+.next
+**/.next
+**/dist
+**/node_modules
+node_modules
+coverage
+.env
+.env.*
+!.env.example
+*.log
+*.zip
+.DS_Store
+apps/web/tsconfig.tsbuildinfo
