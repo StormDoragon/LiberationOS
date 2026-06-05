@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { publishContentItem } from "../../../_lib/publishing";
+import { PublishHttpError, publishContentItem } from "../../../_lib/publishing";
 
 interface RouteProps {
   params: Promise<{ contentId: string }>;
@@ -29,8 +29,11 @@ export async function POST(request: NextRequest, { params }: RouteProps) {
     });
     return NextResponse.json(result);
   } catch (error) {
+    if (error instanceof PublishHttpError) {
+      return NextResponse.json({ error: error.message, job: error.job }, { status: error.status });
+    }
+
     const message = error instanceof Error ? error.message : "Publish failed";
-    const status = message.includes("not found") ? 404 : message.includes("No integration") ? 400 : 502;
-    return NextResponse.json({ error: message }, { status });
+    return NextResponse.json({ error: message }, { status: 502 });
   }
 }

@@ -132,14 +132,17 @@ pnpm dev:worker        # (optional) start BullMQ worker in a second terminal
 
 | Method | Route | Description |
 |--------|-------|-------------|
-| `GET` | `/api/health` | Health check |
+| `GET` | `/api/health` | Liveness check |
+| `GET` | `/api/ready` | Deployment readiness check for database + Redis |
 | `GET` | `/api/projects` | List all projects |
 | `POST` | `/api/projects` | Create a new project |
 | `GET` | `/api/projects/:id` | Get project detail with runs, steps, and content |
 | `POST` | `/api/projects/:id/run` | Run workflow synchronously |
 | `POST` | `/api/projects/:id/approve-all` | Bulk-approve all draft content |
+| `POST` | `/api/projects/:id/publish-all` | Publish approved content through integrations |
 | `POST` | `/api/run` | Create project and queue for async execution |
-| `PATCH` | `/api/content/:id` | Update content status (draft → approved → published) |
+| `PATCH` | `/api/content/:id` | Update review status (draft/approved/scheduled/published) |
+| `POST` | `/api/content/:id/publish` | Publish one approved item through an integration |
 
 ## Scripts
 
@@ -154,6 +157,10 @@ pnpm dev:worker        # (optional) start BullMQ worker in a second terminal
 | `pnpm setup` | Install + generate + push + seed (one command) |
 | `pnpm infra:up` | Start Docker services (Postgres + Redis) |
 | `pnpm infra:down` | Stop Docker services |
+| `pnpm start:web` | Start the production Next.js server |
+| `pnpm start:worker` | Start the production BullMQ worker |
+| `pnpm db:deploy` | Run Prisma migration deploy for production |
+| `pnpm db:schema:check` | Verify root and package Prisma schemas are in sync |
 | `pnpm db:generate` | Generate Prisma client |
 | `pnpm db:push` | Push schema to database |
 | `pnpm db:seed` | Seed demo workspace |
@@ -166,6 +173,14 @@ DATABASE_URL=postgresql://postgres:postgres@localhost:5432/liberation_os?schema=
 REDIS_URL=redis://127.0.0.1:6379
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 NODE_ENV=development
+AUTH_SECRET=dev-secret-change-me
+
+# Worker / queue tuning
+WORKER_CONCURRENCY=2
+WORKFLOW_JOB_ATTEMPTS=3
+WORKFLOW_JOB_BACKOFF_MS=5000
+WORKFLOW_REMOVE_ON_COMPLETE=100
+WORKFLOW_REMOVE_ON_FAIL=100
 
 # AI — optional, system uses offline fallbacks without a key
 OPENAI_API_KEY=
@@ -184,7 +199,48 @@ WORDPRESS_API_URL=
 WORDPRESS_USERNAME=
 WORDPRESS_APP_PASSWORD=
 BUFFER_ACCESS_TOKEN=
+TWITTER_API_KEY=
+TWITTER_API_SECRET=
+TWITTER_ACCESS_TOKEN=
+TWITTER_ACCESS_TOKEN_SECRET=
 ```
+
+
+## Production / Docker Deployment
+
+LiberationOS now includes deployable web and worker containers plus a production Compose stack. The web container exposes `/api/health` for liveness and `/api/ready` for database + Redis readiness. The worker handles `SIGTERM`/`SIGINT` gracefully and uses configurable BullMQ concurrency, attempts, and exponential backoff.
+
+### Build locally
+
+```bash
+docker build --build-arg APP=web -t liberation-os-web .
+docker build --build-arg APP=worker -t liberation-os-worker .
+```
+
+### Run the production stack
+
+```bash
+cp .env.example .env
+# Edit secrets and production URLs first. Do not use the dev AUTH_SECRET in production.
+docker compose -f docker-compose.prod.yml --profile migrate run --rm migrate
+docker compose -f docker-compose.prod.yml up -d web worker
+```
+
+### Operational checks
+
+```bash
+curl http://localhost:3000/api/health
+curl http://localhost:3000/api/ready
+docker compose -f docker-compose.prod.yml logs -f worker
+```
+
+### Production notes
+
+- Set `AUTH_SECRET`, `DATABASE_URL`, `REDIS_URL`, and `NEXT_PUBLIC_APP_URL` explicitly in managed hosting.
+- Run `pnpm db:deploy` (migration-based environments) or the included `migrate` Compose profile before starting web/worker containers.
+- Start at least one worker whenever users can select **Queue worker run** or call `POST /api/run`.
+- Tune `WORKER_CONCURRENCY`, `WORKFLOW_JOB_ATTEMPTS`, and `WORKFLOW_JOB_BACKOFF_MS` based on model latency and provider rate limits.
+- Use `/api/ready` for load balancer readiness, not `/api/health`; readiness verifies database and Redis connectivity.
 
 ## How It Works
 
@@ -218,7 +274,7 @@ Content Drafts → stored in PostgreSQL
 └──────────────────────────────────────────┘
     │
     ▼
-Publishing → WordPress, Buffer (integrations)
+Publishing → WordPress, Buffer, Twitter/X, and other integrations
 ```
 
 ## Offline Mode Warning
@@ -278,16 +334,18 @@ Notes:
 
 ## Current Limitations
 
-- **No autonomous posting** — integrations (WordPress, Buffer) are available but require manual connection and explicit publish actions
+- **Human-gated posting** — integrations publish only after explicit review approval and publish actions
 - **No web browsing or scraping** — agents generate content from prompts, they don't research live data
 - **No ad management** — doesn't create, optimize, or manage paid advertising
 - **No SEO ranking** — generates SEO-friendly content but doesn't submit sitemaps, build backlinks, or monitor rankings
 - **No authentication system** — the current build uses a single demo workspace; multi-user auth is not yet implemented
 - **No autonomous purchasing** — cannot buy domains, hosting, or services on your behalf
 - **Analytics package is scaffolded** — tracks schema but doesn't yet collect or display real metrics
-- **Integration adapters are stubs** — WordPress and Buffer adapters exist but need real credentials and testing against live APIs
+- **Integration adapters require credentials** — WordPress, Buffer, Twitter/X, and other adapters require provider credentials and live-account testing
 
 ## Database Schema
+
+The canonical Prisma schema lives at `packages/db/prisma/schema.prisma`; `prisma/schema.prisma` is kept as a root-level mirror for Prisma CLI/deployment tools that expect the default path. Run `pnpm db:schema:check` after schema edits to verify both copies are synchronized.
 
 9 models: **User**, **Workspace**, **Project**, **WorkflowRun**, **WorkflowStep**, **ContentItem**, **PublishJob**, **IntegrationConnection**, **AnalyticsRecord**
 

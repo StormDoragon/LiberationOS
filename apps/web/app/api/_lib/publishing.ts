@@ -2,6 +2,7 @@ import { db, Prisma } from "@liberation-os/db";
 import { publishContent } from "@liberation-os/integrations";
 
 type PublishStatus = "published" | "scheduled";
+type PublishJobRecord = Awaited<ReturnType<typeof db.publishJob.create>>;
 
 export interface PublishContentItemInput {
   contentId: string;
@@ -13,7 +14,18 @@ export interface PublishContentItemResult {
   ok: true;
   status: PublishStatus;
   externalId?: string;
-  job: Awaited<ReturnType<typeof db.publishJob.create>>;
+  job: PublishJobRecord;
+}
+
+export class PublishHttpError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+    readonly job?: PublishJobRecord,
+  ) {
+    super(message);
+    this.name = "PublishHttpError";
+  }
 }
 
 function normalizeProvider(value: string | null | undefined): string | null {
@@ -24,18 +36,38 @@ function toRecord(value: Prisma.JsonValue): Record<string, unknown> {
   return (value ?? {}) as Record<string, unknown>;
 }
 
+function parseScheduledAt(value: string | undefined): Date | null {
+  if (!value) return null;
+
+  const scheduledFor = new Date(value);
+  if (Number.isNaN(scheduledFor.getTime())) {
+    throw new PublishHttpError("scheduledAt must be a valid ISO datetime", 400);
+  }
+
+  if (scheduledFor.getTime() < Date.now() - 60_000) {
+    throw new PublishHttpError("scheduledAt must be in the future", 400);
+  }
+
+  return scheduledFor;
+}
+
 export async function publishContentItem({
   contentId,
   integrationId,
   scheduledAt,
 }: PublishContentItemInput): Promise<PublishContentItemResult> {
+  const scheduledFor = parseScheduledAt(scheduledAt);
   const item = await db.contentItem.findUnique({
     where: { id: contentId },
     include: { project: { select: { workspaceId: true } } },
   });
 
   if (!item) {
-    throw new Error("Content item not found");
+    throw new PublishHttpError("Content item not found", 404);
+  }
+
+  if (item.status !== "approved" && item.status !== "scheduled") {
+    throw new PublishHttpError("Only approved or scheduled content can be published", 409);
   }
 
   const platformProvider = normalizeProvider(item.platform);
@@ -58,11 +90,11 @@ export async function publishContentItem({
   }
 
   if (!connection) {
-    throw new Error("No integration connection found for this content item");
+    throw new PublishHttpError("No integration connection found for this content item", 400);
   }
 
   if (connection.workspaceId !== item.project.workspaceId) {
-    throw new Error("Integration connection belongs to a different workspace");
+    throw new PublishHttpError("Integration connection belongs to a different workspace", 403);
   }
 
   let externalId: string | undefined;
@@ -80,27 +112,27 @@ export async function publishContentItem({
       },
       connection.provider,
       toRecord(connection.credentials),
-      { scheduledAt },
+      { scheduledAt: scheduledFor?.toISOString() },
     );
     externalId = result.externalId;
   } catch (err) {
     publishError = err instanceof Error ? err.message : String(err);
   }
 
-  const newStatus: PublishStatus = scheduledAt ? "scheduled" : "published";
+  const newStatus: PublishStatus = scheduledFor ? "scheduled" : "published";
 
   const job = await db.publishJob.create({
     data: {
       contentItemId: contentId,
       integration: connection.provider,
-      scheduledFor: scheduledAt ? new Date(scheduledAt) : null,
+      scheduledFor,
       status: publishError ? "failed" : newStatus,
       externalId: externalId ?? null,
     },
   });
 
   if (publishError) {
-    throw new Error(publishError);
+    throw new PublishHttpError(publishError, 502, job);
   }
 
   await db.contentItem.update({

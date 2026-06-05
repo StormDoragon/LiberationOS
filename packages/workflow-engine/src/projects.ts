@@ -157,8 +157,13 @@ export async function createProjectAndQueue(goal: string): Promise<CreateProject
   };
 
   const job = await getWorkflowQueue().add(workflowJobName, payload, {
-    removeOnComplete: 100,
-    removeOnFail: 100
+    attempts: Number(process.env.WORKFLOW_JOB_ATTEMPTS ?? "3"),
+    backoff: {
+      type: "exponential",
+      delay: Number(process.env.WORKFLOW_JOB_BACKOFF_MS ?? "5000")
+    },
+    removeOnComplete: Number(process.env.WORKFLOW_REMOVE_ON_COMPLETE ?? "100"),
+    removeOnFail: Number(process.env.WORKFLOW_REMOVE_ON_FAIL ?? "100")
   });
 
   return {

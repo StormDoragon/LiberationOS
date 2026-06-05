@@ -7,7 +7,8 @@
     "build": "tsc -p tsconfig.json",
     "lint": "echo lint apps/worker",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "echo no tests for worker"
+    "test": "echo no tests for worker",
+    "start": "tsx src/index.ts"
   },
   "dependencies": {
     "bullmq": "^5.44.0",
