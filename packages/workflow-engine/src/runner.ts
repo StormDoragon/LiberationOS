@@ -49,8 +49,9 @@ export async function createProject(input: CreateProjectInput) {
   });
 }
 
-export async function getProjects() {
+export async function getProjects(userId?: string) {
   return db.project.findMany({
+    where: userId ? { workspace: { userId } } : undefined,
     orderBy: { createdAt: "desc" },
     include: {
       runs: {
