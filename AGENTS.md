@@ -28,3 +28,12 @@ Every PR must include in the description:
 Never store secrets in code. Always use environment variables for keys.
 
 This file takes precedence over any conflicting instructions.
+
+## Testing Standards
+
+- All new functionality must include tests
+- Core business logic packages (`workflow-engine`, `ai-core`, `utils`, `integrations`) require unit tests
+- API routes should have handler or integration tests
+- Use Vitest + Testing Library pattern
+- Aim for at least 60% coverage on modified core files initially
+- No placeholder tests allowed

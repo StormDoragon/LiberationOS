@@ -8,6 +8,9 @@
     "build": "tsc -p tsconfig.json",
     "lint": "echo lint packages/analytics",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "echo no tests for analytics"
+    "test": "vitest run --passWithNoTests",
+    "test:ci": "vitest run --passWithNoTests",
+    "test:coverage": "vitest run --coverage --passWithNoTests",
+    "test:watch": "vitest --watch"
   }
 }

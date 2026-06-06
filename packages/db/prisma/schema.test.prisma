@@ -1,0 +1,19 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/test-client"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Lightweight SQLite schema for isolated test fixtures. Production parity tests use the PostgreSQL schema.
+model TestFixture {
+  id        String   @id @default(cuid())
+  namespace String
+  payload   Json
+  createdAt DateTime @default(now())
+
+  @@index([namespace])
+}

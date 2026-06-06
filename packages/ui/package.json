@@ -8,7 +8,10 @@
     "build": "tsc -p tsconfig.json",
     "lint": "echo lint packages/ui",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "echo no tests for ui"
+    "test": "vitest run --passWithNoTests",
+    "test:ci": "vitest run --passWithNoTests",
+    "test:coverage": "vitest run --coverage --passWithNoTests",
+    "test:watch": "vitest --watch"
   },
   "dependencies": {
     "react": "^19.0.0"

@@ -7,8 +7,11 @@
     "build": "tsc -p tsconfig.json",
     "lint": "echo lint apps/worker",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "echo no tests for worker",
-    "start": "tsx src/index.ts"
+    "test": "vitest run --passWithNoTests",
+    "start": "tsx src/index.ts",
+    "test:ci": "vitest run --passWithNoTests",
+    "test:coverage": "vitest run --coverage --passWithNoTests",
+    "test:watch": "vitest --watch"
   },
   "dependencies": {
     "bullmq": "^5.44.0",

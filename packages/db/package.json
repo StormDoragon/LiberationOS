@@ -8,7 +8,7 @@
     "build": "tsc -p tsconfig.json",
     "lint": "echo lint packages/db",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "echo no tests for db",
+    "test": "vitest run --passWithNoTests",
     "prisma:generate": "prisma generate --schema prisma/schema.prisma",
     "prisma:migrate": "prisma migrate dev --schema prisma/schema.prisma",
     "prisma:push": "prisma db push --schema prisma/schema.prisma",
@@ -17,7 +17,11 @@
     "prisma:deploy": "prisma migrate deploy --schema prisma/schema.prisma",
     "db:generate": "prisma generate --schema prisma/schema.prisma",
     "db:migrate": "prisma migrate dev --schema prisma/schema.prisma",
-    "db:push": "prisma db push --schema prisma/schema.prisma"
+    "db:push": "prisma db push --schema prisma/schema.prisma",
+    "test:ci": "vitest run --passWithNoTests",
+    "test:coverage": "vitest run --coverage --passWithNoTests",
+    "test:watch": "vitest --watch",
+    "db:test:push": "DATABASE_URL=file:./test.db prisma db push --schema prisma/schema.test.prisma --skip-generate"
   },
   "dependencies": {
     "@prisma/client": "^6.5.0",
