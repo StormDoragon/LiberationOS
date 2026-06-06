@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint . --config eslint.config.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --passWithNoTests",
     "test:ci": "vitest run --passWithNoTests",
@@ -20,7 +20,7 @@
     "@liberation-os/ui": "workspace:*",
     "@liberation-os/utils": "workspace:*",
     "@liberation-os/workflow-engine": "workspace:*",
-    "next": "15.2.2",
+    "next": "15.5.19",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "@auth/prisma-adapter": "^2.7.4",
@@ -32,7 +32,7 @@
     "@types/node": "^22.13.10",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
-    "eslint-config-next": "^15.2.2",
+    "eslint-config-next": "15.5.19",
     "typescript": "^5.8.2"
   }
 }

@@ -14,9 +14,7 @@ const nextConfig: NextConfig = {
     "@liberation-os/utils",
     "@liberation-os/workflow-engine",
   ],
-  experimental: {
-    typedRoutes: true
-  }
+  typedRoutes: true,
 };
 
 export default nextConfig;
