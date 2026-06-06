@@ -1,5 +1,4 @@
-import { Prisma } from "@prisma/client";
-import { prisma } from "@liberation-os/db";
+import { Prisma, prisma } from "@liberation-os/db";
 import type {
   CreateProjectResponse,
   ProjectListItem,

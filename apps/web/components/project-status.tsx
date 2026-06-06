@@ -7,6 +7,10 @@ interface ProjectStatusPanelProps {
   initialProject: ProjectSnapshot;
 }
 
+interface ProjectResponse {
+  project: ProjectSnapshot;
+}
+
 const activeStatuses = new Set(["pending", "running"]);
 
 export function ProjectStatusPanel({ initialProject }: ProjectStatusPanelProps) {
@@ -28,8 +32,8 @@ export function ProjectStatusPanel({ initialProject }: ProjectStatusPanelProps) 
           throw new Error("Failed to refresh project");
         }
 
-        const refreshed = (await response.json()) as ProjectSnapshot;
-        setProject(refreshed);
+        const data = (await response.json()) as ProjectResponse;
+        setProject(data.project);
         setError(null);
       } catch (refreshError) {
         setError(refreshError instanceof Error ? refreshError.message : "Failed to refresh project");
