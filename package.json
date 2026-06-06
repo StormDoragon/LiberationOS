@@ -9,7 +9,7 @@
     "build": "turbo build",
     "lint": "turbo lint",
     "typecheck": "turbo typecheck",
-    "test": "turbo test",
+    "test": "vitest run && pnpm --filter @liberation-os/web test",
     "worker": "pnpm --filter @liberation-os/worker dev",
     "db:generate": "turbo run db:generate",
     "db:migrate": "turbo run db:migrate",
@@ -23,13 +23,24 @@
     "start:worker": "pnpm --filter @liberation-os/worker start",
     "db:deploy": "pnpm --filter @liberation-os/db prisma:deploy",
     "db:schema:check": "node scripts/check-prisma-schema-sync.mjs",
-    "clean": "turbo clean && rm -rf node_modules/.cache .turbo"
+    "clean": "turbo clean && rm -rf node_modules/.cache .turbo",
+    "test:ci": "vitest run && pnpm --filter @liberation-os/web test:ci",
+    "test:coverage": "vitest run --coverage && pnpm --filter @liberation-os/web test:coverage",
+    "test:watch": "vitest --watch"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
     "turbo": "^2.5.0",
     "typescript": "^5.8.2",
     "eslint": "^9.22.0",
-    "prettier": "^3.5.3"
+    "prettier": "^3.5.3",
+    "vitest": "^3.0.9",
+    "@vitest/ui": "^3.0.9",
+    "@vitest/coverage-v8": "^3.0.9",
+    "jsdom": "^26.0.0",
+    "@testing-library/react": "^16.2.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "msw": "^2.7.3",
+    "vite-tsconfig-paths": "^5.1.4"
   }
 }

@@ -8,7 +8,10 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "test": "echo no tests for web"
+    "test": "vitest run --passWithNoTests",
+    "test:ci": "vitest run --passWithNoTests",
+    "test:coverage": "vitest run --coverage --passWithNoTests",
+    "test:watch": "vitest --watch"
   },
   "dependencies": {
     "@liberation-os/agent-packs": "workspace:*",
