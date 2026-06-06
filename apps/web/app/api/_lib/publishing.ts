@@ -1,4 +1,4 @@
-import { db, Prisma } from "@liberation-os/db";
+import { db, decryptIntegrationCredentials, Prisma } from "@liberation-os/db";
 import { publishContent } from "@liberation-os/integrations";
 
 type PublishStatus = "published" | "scheduled";
@@ -67,17 +67,25 @@ export async function publishContentItem({
   }
 
   if (item.status !== "approved" && item.status !== "scheduled") {
-    throw new PublishHttpError("Only approved or scheduled content can be published", 409);
+    throw new PublishHttpError(
+      "Only approved or scheduled content can be published",
+      409,
+    );
   }
 
   const platformProvider = normalizeProvider(item.platform);
   let connection = integrationId
-    ? await db.integrationConnection.findUnique({ where: { id: integrationId } })
+    ? await db.integrationConnection.findUnique({
+        where: { id: integrationId },
+      })
     : null;
 
   if (!connection && !integrationId && platformProvider) {
     connection = await db.integrationConnection.findFirst({
-      where: { workspaceId: item.project.workspaceId, provider: platformProvider },
+      where: {
+        workspaceId: item.project.workspaceId,
+        provider: platformProvider,
+      },
       orderBy: { createdAt: "asc" },
     });
   }
@@ -90,11 +98,17 @@ export async function publishContentItem({
   }
 
   if (!connection) {
-    throw new PublishHttpError("No integration connection found for this content item", 400);
+    throw new PublishHttpError(
+      "No integration connection found for this content item",
+      400,
+    );
   }
 
   if (connection.workspaceId !== item.project.workspaceId) {
-    throw new PublishHttpError("Integration connection belongs to a different workspace", 403);
+    throw new PublishHttpError(
+      "Integration connection belongs to a different workspace",
+      403,
+    );
   }
 
   let externalId: string | undefined;
@@ -111,7 +125,7 @@ export async function publishContentItem({
         metadata: toRecord(item.metadata),
       },
       connection.provider,
-      toRecord(connection.credentials),
+      decryptIntegrationCredentials(connection),
       { scheduledAt: scheduledFor?.toISOString() },
     );
     externalId = result.externalId;

@@ -20,7 +20,8 @@
     "db:push": "prisma db push --schema prisma/schema.prisma"
   },
   "dependencies": {
-    "@prisma/client": "^6.5.0"
+    "@prisma/client": "^6.5.0",
+    "@liberation-os/utils": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^22.13.10",

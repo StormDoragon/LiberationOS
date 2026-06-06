@@ -38,11 +38,21 @@ function toJsonValue(value: unknown): Prisma.InputJsonValue {
   return JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue;
 }
 
-export async function getDefaultWorkspace() {
-  return ensureDefaultWorkspace();
+export async function getDefaultWorkspace(userId?: string) {
+  return ensureDefaultWorkspace(userId);
 }
 
-async function ensureDefaultWorkspace() {
+async function ensureDefaultWorkspace(authenticatedUserId?: string) {
+  if (authenticatedUserId) {
+    const existingWorkspace = await prisma.workspace.findFirst({
+      where: { userId: authenticatedUserId },
+      orderBy: { createdAt: "asc" }
+    });
+
+    return existingWorkspace ?? prisma.workspace.create({
+      data: { userId: authenticatedUserId, name: defaultWorkspaceName }
+    });
+  }
   const user = await prisma.user.upsert({
     where: { email: defaultUserEmail },
     update: {},
@@ -118,8 +128,8 @@ function serializeProject(project: ProjectWithRelations): ProjectSnapshot {
   };
 }
 
-export async function createProjectAndQueue(goal: string): Promise<CreateProjectResponse> {
-  const workspace = await ensureDefaultWorkspace();
+export async function createProjectAndQueue(goal: string, userId?: string): Promise<CreateProjectResponse> {
+  const workspace = await ensureDefaultWorkspace(userId);
 
   const project = await prisma.project.create({
     data: {
@@ -173,8 +183,9 @@ export async function createProjectAndQueue(goal: string): Promise<CreateProject
   };
 }
 
-export async function listProjects(): Promise<ProjectListItem[]> {
+export async function listProjects(userId?: string): Promise<ProjectListItem[]> {
   const projects = await prisma.project.findMany({
+    where: userId ? { workspace: { userId } } : undefined,
     orderBy: { createdAt: "desc" },
     include: {
       runs: true,

@@ -16,3 +16,8 @@ export { Prisma };
 
 // Alias for backward compatibility
 export const prisma = db;
+
+export {
+  decryptIntegrationCredentials,
+  encryptIntegrationCredentials,
+} from "./integration-credentials";

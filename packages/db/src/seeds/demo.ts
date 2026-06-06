@@ -7,6 +7,7 @@ async function main() {
     create: {
       email: "demo@liberation.local",
       name: "Demo User",
+      role: "OWNER",
       workspaces: {
         create: {
           name: "Liberation Lab",

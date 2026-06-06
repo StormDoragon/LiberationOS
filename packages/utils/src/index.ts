@@ -32,3 +32,5 @@ export function createLogger(namespace: string) {
     warn: (message: string, meta?: unknown) => console.warn(`[${namespace}]`, message, meta ?? ""),
   };
 }
+
+export { decrypt, encrypt } from "./encryption";

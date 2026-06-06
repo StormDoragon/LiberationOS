@@ -9,5 +9,8 @@
     "lint": "echo lint packages/utils",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "echo no tests for utils"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.10"
   }
 }

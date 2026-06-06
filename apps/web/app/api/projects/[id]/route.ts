@@ -1,17 +1,25 @@
 import { NextResponse } from "next/server";
 import { getProjectById } from "@liberation-os/workflow-engine";
+import {
+  authErrorResponse,
+  requireProjectAccess,
+  requireUser,
+} from "../../../../lib/api-auth";
 
 interface RouteProps {
   params: Promise<{ id: string }>;
 }
 
 export async function GET(_request: Request, { params }: RouteProps) {
-  const { id } = await params;
-  const project = await getProjectById(id);
-
-  if (!project) {
-    return NextResponse.json({ error: "Project not found" }, { status: 404 });
+  try {
+    const user = await requireUser();
+    const { id } = await params;
+    await requireProjectAccess(id, user.id);
+    return NextResponse.json({ project: await getProjectById(id) });
+  } catch (error) {
+    return (
+      authErrorResponse(error) ??
+      NextResponse.json({ error: "Unable to load project" }, { status: 500 })
+    );
   }
-
-  return NextResponse.json({ project });
 }
