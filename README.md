@@ -345,7 +345,7 @@ Notes:
 
 ## Database Schema
 
-The canonical Prisma schema lives at `packages/db/prisma/schema.prisma`; `prisma/schema.prisma` is kept as a root-level mirror for Prisma CLI/deployment tools that expect the default path. Run `pnpm db:schema:check` after schema edits to verify both copies are synchronized.
+The canonical Prisma schema lives at `packages/db/prisma/schema.prisma`. Run `pnpm db:schema:check` after schema edits to verify the canonical schema is readable and contains the required core models.
 
 9 models: **User**, **Workspace**, **Project**, **WorkflowRun**, **WorkflowStep**, **ContentItem**, **PublishJob**, **IntegrationConnection**, **AnalyticsRecord**
 
